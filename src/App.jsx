@@ -11,13 +11,8 @@ const CLOUDINARY_CLOUD_NAME = "okej62yk";
 const CLOUDINARY_UPLOAD_PRESET = "preset_elasombro";
 
 // EMAIL AUTORIZADO PARA ESTA TIENDA
-const EMAIL_AUTORIZADO = "tiendaelasombro@guiaclic.com.ar";
+const EMAIL_AUTORIZADO = "tiendadepan@guiaclic.com.ar";
 
-// Arma la galería de fotos de un producto combinando las fotos generales
-// (imagenes[]) con la foto específica de cada variante (imagen_asociada_url),
-// sin duplicar una misma URL dos veces. Cada foto queda etiquetada con la
-// variante a la que pertenece (o null si es una foto general del producto),
-// para poder sincronizar los selectores de medida/material/color al navegar.
 function construirGaleria(prod) {
   if (!prod) return [];
   const fotosGenerales = (prod.imagenes && prod.imagenes.length > 0)
@@ -46,9 +41,6 @@ function construirGaleria(prod) {
   return galeria;
 }
 
-// El zoom que "sigue" al cursor solo tiene sentido con mouse real. En
-// celular el mouse se emula al tocar, así que ahí usamos en cambio un
-// zoom de "tocar para ampliar" + arrastrar para recorrer la foto.
 function tieneMousePreciso() {
   return typeof window !== 'undefined' &&
     window.matchMedia &&
@@ -62,35 +54,38 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('');
   const [soloOfertas, setSoloOfertas] = useState(false);
 
-  // Modal Detalle de Producto estilo Tiendanube (reemplaza a ModalProducto.jsx)
+  // Modal Detalle de Producto
   const [productoDetalle, setProductoDetalle] = useState(null);
   const [imagenActivaIndex, setImagenActivaIndex] = useState(0);
   const [imagenVarianteDirecta, setImagenVarianteDirecta] = useState(null);
   const [lightboxAbierto, setLightboxAbierto] = useState(false);
   const [imagenHoverZoom, setImagenHoverZoom] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [medidaSel, setMedidaSel] = useState('');
-  const [materialSel, setMaterialSel] = useState('');
-  const [colorSel, setColorSel] = useState('');
+  
+  // Selectores de variantes para Panadería
+  const [saborSel, setSaborSel] = useState('');
+  const [detalleSel, setDetalleSel] = useState('');
   const [cantidadSel, setCantidadSel] = useState(1);
 
-  // Configuración Negocio con Logo Local (/logo.jpg) y WhatsApp Real
+  // Configuración Negocio
   const [configNegocio, setConfigNegocio] = useState({
     id: null,
-    nombre: 'TIENDA EL ASOMBRO',
-    subtitulo: 'BLANQUERÍA, NOVEDADES & BAZAR',
+    nombre: 'TIENDA DE PAN',
+    subtitulo: 'Panadería & Pastelería Artesanal - Venta Mayorista',
     logo_url: '/logo.jpg',
-    whatsapp: '5493462368051'
+    whatsapp: '5491156988468',
+    monto_minimo_envio: 5000,
+    zonas_cobertura: 'Pilar, Garín, Malvinas Argentinas y José C. Paz'
   });
   const [subiendoLogo, setSubiendoLogo] = useState(false);
 
-  // Carrito y Notificación Toast
+  // Carrito y Toast
   const [carrito, setCarrito] = useState([]);
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [toastMensaje, setToastMensaje] = useState('');
   const [animarCarrito, setAnimarCarrito] = useState(false);
 
-  // Modo Admin (Supabase Auth)
+  // Modo Admin
   const [esAdmin, setEsAdmin] = useState(false);
   const [modalAdminAbierto, setModalAdminAbierto] = useState(false);
   const [emailInput, setEmailInput] = useState('');
@@ -98,7 +93,7 @@ export default function App() {
   const [errorPassword, setErrorPassword] = useState('');
   const [cargandoAuth, setCargandoAuth] = useState(false);
 
-  // Formulario Producto Admin
+  // Formulario Admin
   const [productoEditar, setProductoEditar] = useState(null);
   const [subiendoImagen, setSubiendoImagen] = useState(false);
   const [subiendoImagenVarIdx, setSubiendoImagenVarIdx] = useState(null);
@@ -111,9 +106,8 @@ export default function App() {
     imagenes: []
   });
 
-  // Estado para variantes en el form admin
   const [formVariantes, setFormVariantes] = useState([
-    { medida: '', material: '', color: '', stock: 10, precio: '', precio_oferta: '', imagen_asociada_url: '' }
+    { sabor_presentacion: '', detalle: '', stock: 999, precio: '', precio_oferta: '', imagen_asociada_url: '' }
   ]);
 
   const GUIA_CLIC_URL = "https://guiaclic.com.ar";
@@ -137,10 +131,6 @@ export default function App() {
     };
   }, []);
 
-  // Si la app se abrió desde un link compartido (?producto=ID&medida=..&
-  // material=..&color=..), en cuanto llegan los productos abrimos
-  // directamente ese detalle con esa variante ya seleccionada. Se aplica
-  // una sola vez, para no reabrir el modal si el usuario ya lo cerró.
   const linkCompartidoAplicadoRef = useRef(false);
 
   useEffect(() => {
@@ -160,20 +150,17 @@ export default function App() {
 
     abrirDetalleProducto(prod);
 
-    const medida = params.get('medida') || '';
-    const material = params.get('material') || '';
-    const color = params.get('color') || '';
+    const sabor = params.get('sabor') || '';
+    const detalle = params.get('detalle') || '';
 
-    if (medida || material || color) {
+    if (sabor || detalle) {
       const variante = (prod.variantes || []).find((v) =>
-        (medida === '' || v.medida === medida) &&
-        (material === '' || v.material === material) &&
-        (color === '' || v.color === color)
+        (sabor === '' || v.sabor_presentacion === sabor) &&
+        (detalle === '' || v.detalle === detalle)
       );
       if (variante) {
-        setMedidaSel(variante.medida || '');
-        setMaterialSel(variante.material || '');
-        setColorSel(variante.color || '');
+        setSaborSel(variante.sabor_presentacion || '');
+        setDetalleSel(variante.detalle || '');
         if (variante.imagen_asociada_url) {
           const galeria = construirGaleria(prod);
           const idx = galeria.findIndex((g) => g.url === variante.imagen_asociada_url);
@@ -183,16 +170,7 @@ export default function App() {
     }
   }, [productos]);
 
-  // Navegación de la galería de fotos con las flechas del teclado (← →),
-  // solo mientras el modal de detalle de producto está abierto.
   const touchStartXRef = useRef(null);
-
-  // Referencias y estado para el gesto táctil dentro del lightbox (celular):
-  // - Si la foto NO está ampliada: deslizar hacia los costados pasa a la
-  //   foto siguiente/anterior (como MercadoLibre); un toque simple amplía.
-  // - Si la foto SÍ está ampliada: arrastrar el dedo la recorre, moviéndola
-  //   en el mismo sentido en que se arrastra; un toque simple (sin
-  //   arrastre) la vuelve a tamaño normal.
   const lightboxImgRef = useRef(null);
   const arrastreZoomRef = useRef({ inicio: null, panInicial: { x: 0, y: 0 }, arrastro: false, esHorizontal: null });
   const [panZoom, setPanZoom] = useState({ x: 0, y: 0 });
@@ -202,7 +180,7 @@ export default function App() {
   useEffect(() => {
     if (!lightboxAbierto) return;
     const el = lightboxImgRef.current;
-    if (!el || tieneMousePreciso()) return; // en desktop el zoom ya sigue al mouse solo
+    if (!el || tieneMousePreciso()) return;
 
     const handleTouchStart = (e) => {
       const t = e.touches[0];
@@ -262,9 +240,8 @@ export default function App() {
         const nuevoIndex = calcularNuevoIndice(prev, galeria.length);
         const item = galeria[nuevoIndex];
         if (item?.variante) {
-          setMedidaSel(item.variante.medida || '');
-          setMaterialSel(item.variante.material || '');
-          setColorSel(item.variante.color || '');
+          setSaborSel(item.variante.sabor_presentacion || '');
+          setDetalleSel(item.variante.detalle || '');
         }
         return nuevoIndex;
       });
@@ -289,35 +266,27 @@ export default function App() {
     setTimeout(() => setToastMensaje(''), 3000);
   };
 
-  // Toast simple, sin la animación del ícono del carrito (para avisos que
-  // no son de "se agregó al carrito", como copiar un link).
   const mostrarToastSimple = (mensaje) => {
     setToastMensaje(mensaje);
     setTimeout(() => setToastMensaje(''), 3000);
   };
 
-  // Arma un link directo al producto (y, si hay una variante elegida, a esa
-  // variante puntual) y lo comparte con el share nativo del celular; si no
-  // está disponible (por ejemplo en PC), copia el link al portapapeles.
   const compartirProducto = async () => {
     if (!productoDetalle) return;
 
     const params = new URLSearchParams();
     params.set('producto', productoDetalle.id);
-    if (medidaSel) params.set('medida', medidaSel);
-    if (materialSel) params.set('material', materialSel);
-    if (colorSel) params.set('color', colorSel);
+    if (saborSel) params.set('sabor', saborSel);
+    if (detalleSel) params.set('detalle', detalleSel);
 
     const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-    const detalleVariante = [medidaSel, materialSel, colorSel].filter(Boolean).join(' / ');
+    const detalleVariante = [saborSel, detalleSel].filter(Boolean).join(' / ');
     const titulo = `${productoDetalle.titulo}${detalleVariante ? ' - ' + detalleVariante : ''}`;
 
     if (navigator.share) {
       try {
         await navigator.share({ title: titulo, url });
-      } catch (error) {
-        // El usuario canceló el cuadro de compartir nativo: no hacemos nada.
-      }
+      } catch (error) {}
       return;
     }
 
@@ -343,10 +312,10 @@ export default function App() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('tienda_el_asombro')
+        .from('tienda_de_pan_productos')
         .select(`
           *,
-          variantes:tienda_el_asombro_variantes(*)
+          variantes:tienda_de_pan_variantes(*)
         `)
         .order('id', { ascending: false });
 
@@ -362,7 +331,7 @@ export default function App() {
   async function fetchConfigNegocio() {
     try {
       const { data, error } = await supabase
-        .from('config_tienda_el_asombro')
+        .from('tienda_de_pan_config')
         .select('*')
         .limit(1)
         .single();
@@ -435,23 +404,27 @@ export default function App() {
     try {
       if (configNegocio.id) {
         const { error } = await supabase
-          .from('config_tienda_el_asombro')
+          .from('tienda_de_pan_config')
           .update({
             nombre: configNegocio.nombre,
             subtitulo: configNegocio.subtitulo,
             logo_url: configNegocio.logo_url,
-            whatsapp: configNegocio.whatsapp
+            whatsapp: configNegocio.whatsapp,
+            monto_minimo_envio: configNegocio.monto_minimo_envio,
+            zonas_cobertura: configNegocio.zonas_cobertura
           })
           .eq('id', configNegocio.id);
         if (error) throw error;
       } else {
         const { data, error } = await supabase
-          .from('config_tienda_el_asombro')
+          .from('tienda_de_pan_config')
           .insert([{
             nombre: configNegocio.nombre,
             subtitulo: configNegocio.subtitulo,
             logo_url: configNegocio.logo_url,
-            whatsapp: configNegocio.whatsapp
+            whatsapp: configNegocio.whatsapp,
+            monto_minimo_envio: configNegocio.monto_minimo_envio,
+            zonas_cobertura: configNegocio.zonas_cobertura
           }])
           .select()
           .single();
@@ -499,7 +472,6 @@ export default function App() {
     setEsAdmin(false);
   };
 
-  // Abrir Modal de Detalle de Producto
   const abrirDetalleProducto = (prod) => {
     setProductoDetalle(prod);
     setCantidadSel(1);
@@ -510,78 +482,59 @@ export default function App() {
     const galeria = construirGaleria(prod);
 
     if (vars.length > 0) {
-      setMedidaSel(vars[0].medida || '');
-      setMaterialSel(vars[0].material || '');
-      setColorSel(vars[0].color || '');
+      setSaborSel(vars[0].sabor_presentacion || '');
+      setDetalleSel(vars[0].detalle || '');
       const idxInicial = vars[0].imagen_asociada_url
         ? galeria.findIndex((g) => g.url === vars[0].imagen_asociada_url)
         : -1;
       setImagenActivaIndex(idxInicial >= 0 ? idxInicial : 0);
     } else {
-      setMedidaSel('');
-      setMaterialSel('');
-      setColorSel('');
+      setSaborSel('');
+      setDetalleSel('');
       setImagenActivaIndex(0);
     }
   };
 
-  // Calcular variante seleccionada actualmente en el modal.
-  // IMPORTANTE: si la combinación elegida no existe como variante real, devolvemos null
-  // en vez de "adivinar" con la primera variante, para no mezclar variantes distintas
-  // bajo un mismo ítem del carrito.
   const obtenerVarianteSeleccionada = () => {
     if (!productoDetalle || !productoDetalle.variantes || productoDetalle.variantes.length === 0) return null;
     return productoDetalle.variantes.find((v) =>
-      (medidaSel === '' || v.medida === medidaSel) &&
-      (materialSel === '' || v.material === materialSel) &&
-      (colorSel === '' || v.color === colorSel)
+      (saborSel === '' || v.sabor_presentacion === saborSel) &&
+      (detalleSel === '' || v.detalle === detalleSel)
     ) || null;
   };
 
   const varianteActual = obtenerVarianteSeleccionada();
 
-  // Los 3 selectores (medida/material/color) NO son independientes: solo existen las
-  // combinaciones que realmente están cargadas como filas en tienda_el_asombro_variantes.
-  // Por eso, al tocar un selector, si la combinación resultante con los otros dos valores
-  // ya elegidos no corresponde a ninguna variante real, reacomodamos esos otros dos para
-  // que siempre queden apuntando a una variante que sí existe.
   const handleCambioVariante = (tipo, valor) => {
     const variantes = productoDetalle?.variantes || [];
 
-    let m = medidaSel;
-    let mat = materialSel;
-    let c = colorSel;
+    let sab = saborSel;
+    let det = detalleSel;
 
-    if (tipo === 'medida') m = valor;
-    if (tipo === 'material') mat = valor;
-    if (tipo === 'color') c = valor;
+    if (tipo === 'sabor') sab = valor;
+    if (tipo === 'detalle') det = valor;
 
     const candidatas = variantes.filter((v) => {
-      if (tipo === 'medida') return v.medida === valor;
-      if (tipo === 'material') return v.material === valor;
-      return v.color === valor;
+      if (tipo === 'sabor') return v.sabor_presentacion === valor;
+      return v.detalle === valor;
     });
 
     const combinacionValida = candidatas.some((v) =>
-      (m === '' || v.medida === m) &&
-      (mat === '' || v.material === mat) &&
-      (c === '' || v.color === c)
+      (sab === '' || v.sabor_presentacion === sab) &&
+      (det === '' || v.detalle === det)
     );
 
     if (!combinacionValida && candidatas[0]) {
-      m = candidatas[0].medida || '';
-      mat = candidatas[0].material || '';
-      c = candidatas[0].color || '';
+      sab = candidatas[0].sabor_presentacion || '';
+      det = candidatas[0].detalle || '';
     }
 
-    setMedidaSel(m);
-    setMaterialSel(mat);
-    setColorSel(c);
+    setSaborSel(sab);
+    setDetalleSel(det);
 
     const encontrada = variantes.find((v) =>
-      (m === '' || v.medida === m) &&
-      (mat === '' || v.material === mat) &&
-      (c === '' || v.color === c)
+      (sab === '' || v.sabor_presentacion === sab) &&
+      (det === '' || v.detalle === det)
     ) || candidatas[0] || null;
 
     setImagenVarianteDirecta(encontrada?.imagen_asociada_url || null);
@@ -592,16 +545,16 @@ export default function App() {
   const obtenerPrecioActual = () => {
     if (varianteActual) {
       const pOferta = varianteActual.precio_oferta ? Number(varianteActual.precio_oferta) : null;
-      const pNormal = varianteActual.precio ? Number(varianteActual.precio) : Number(productoDetalle?.precio || 0);
+      const pNormal = varianteActual.precio ? Number(varianteActual.precio) : Number(productoDetalle?.precio_base || 0);
       return {
         precio: pOferta || pNormal,
         precioOriginal: pOferta ? pNormal : null,
-        stock: varianteActual.stock ?? 0
+        stock: varianteActual.stock ?? 999
       };
     }
     if (tieneVariantes) {
       const pOferta = productoDetalle?.precio_oferta ? Number(productoDetalle.precio_oferta) : null;
-      const pNormal = Number(productoDetalle?.precio || 0);
+      const pNormal = Number(productoDetalle?.precio_base || 0);
       return {
         precio: pOferta || pNormal,
         precioOriginal: pOferta ? pNormal : null,
@@ -609,7 +562,7 @@ export default function App() {
       };
     }
     const pOferta = productoDetalle?.precio_oferta ? Number(productoDetalle.precio_oferta) : null;
-    const pNormal = Number(productoDetalle?.precio || 0);
+    const pNormal = Number(productoDetalle?.precio_base || 0);
     return {
       precio: pOferta || pNormal,
       precioOriginal: pOferta ? pNormal : null,
@@ -638,9 +591,8 @@ export default function App() {
       producto_id: productoDetalle.id,
       variante_id: varianteActual?.id || null,
       titulo: productoDetalle.titulo,
-      medida: medidaSel,
-      material: materialSel,
-      color: colorSel,
+      sabor_presentacion: saborSel,
+      detalle: detalleSel,
       precioEfectivo: infoPrecio.precio,
       cantidad: cantidadSel,
       imagen: imgFinal
@@ -682,22 +634,25 @@ export default function App() {
 
   const totalCarrito = carrito.reduce((sum, item) => sum + item.precioEfectivo * item.cantidad, 0);
   const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
+  const MINIMO_ENVIO = Number(configNegocio.monto_minimo_envio || 5000);
+  const cumpleMinimo = totalCarrito >= MINIMO_ENVIO;
 
   const enviarPedidoWhatsApp = () => {
-    if (carrito.length === 0) return;
-    let mensaje = `Hola! Quisiera realizar la siguiente compra en *${configNegocio.nombre}*:\n\n`;
+    if (carrito.length === 0 || !cumpleMinimo) return;
+    let mensaje = `Hola *${configNegocio.nombre}*! Quisiera realizar el siguiente pedido mayorista:\n\n`;
     carrito.forEach((item) => {
       let detalles = [];
-      if (item.medida) detalles.push(`Medida: ${item.medida}`);
-      if (item.material) detalles.push(`Material: ${item.material}`);
-      if (item.color) detalles.push(`Color: ${item.color}`);
+      if (item.sabor_presentacion) detalles.push(`Opción: ${item.sabor_presentacion}`);
+      if (item.detalle) detalles.push(`Detalle: ${item.detalle}`);
 
       const strDetalles = detalles.length > 0 ? ` (${detalles.join(', ')})` : '';
       mensaje += `• *${item.titulo}*${strDetalles} x${item.cantidad} - $${item.precioEfectivo * item.cantidad}\n`;
     });
     mensaje += `\n*TOTAL ESTIMADO: $${totalCarrito}*`;
+    mensaje += `\n\n----------------------------------`;
+    mensaje += `\n📍 *Dirección de entrega:* [Escribí tu calle y localidad aquí]`;
 
-    const wsNumber = configNegocio.whatsapp || "5493462368051";
+    const wsNumber = configNegocio.whatsapp || "5491156988468";
     window.open(`https://wa.me/${wsNumber}?text=${encodeURIComponent(mensaje)}`, '_blank');
   };
 
@@ -709,7 +664,6 @@ export default function App() {
     return limpio.charAt(0).toUpperCase() + limpio.slice(1);
   };
 
-  // ADMIN: Guardar Producto y sus Variantes
   const guardarProducto = async (e) => {
     e.preventDefault();
     try {
@@ -717,7 +671,7 @@ export default function App() {
         titulo: formProd.titulo,
         categoria: normalizarCategoria(formProd.categoria),
         descripcion: formProd.descripcion,
-        precio: Number(formProd.precio) || 0,
+        precio_base: Number(formProd.precio) || 0,
         precio_oferta: formProd.precio_oferta ? Number(formProd.precio_oferta) : null,
         imagenes: formProd.imagenes,
         imagen_url: formProd.imagenes[0] || ''
@@ -727,16 +681,15 @@ export default function App() {
 
       if (productoEditar) {
         const { error } = await supabase
-          .from('tienda_el_asombro')
+          .from('tienda_de_pan_productos')
           .update(payload)
           .eq('id', prodId);
         if (error) throw error;
 
-        // Borrar variantes viejas para reinsertar las actualizadas
-        await supabase.from('tienda_el_asombro_variantes').delete().eq('producto_id', prodId);
+        await supabase.from('tienda_de_pan_variantes').delete().eq('producto_id', prodId);
       } else {
         const { data, error } = await supabase
-          .from('tienda_el_asombro')
+          .from('tienda_de_pan_productos')
           .insert([payload])
           .select()
           .single();
@@ -744,16 +697,14 @@ export default function App() {
         prodId = data.id;
       }
 
-      // Insertar Variantes con su foto correspondiente
       if (formVariantes.length > 0 && prodId) {
         const variantesPayload = formVariantes
-          .filter((v) => v.medida || v.material || v.color)
+          .filter((v) => v.sabor_presentacion || v.detalle)
           .map((v) => ({
             producto_id: prodId,
-            medida: v.medida,
-            material: v.material,
-            color: v.color,
-            stock: Number(v.stock) || 0,
+            sabor_presentacion: v.sabor_presentacion,
+            detalle: v.detalle,
+            stock: Number(v.stock) || 999,
             precio: v.precio ? Number(v.precio) : null,
             precio_oferta: v.precio_oferta ? Number(v.precio_oferta) : null,
             imagen_asociada_url: v.imagen_asociada_url || null
@@ -761,14 +712,14 @@ export default function App() {
 
         if (variantesPayload.length > 0) {
           const { error: errVar } = await supabase
-            .from('tienda_el_asombro_variantes')
+            .from('tienda_de_pan_variantes')
             .insert(variantesPayload);
           if (errVar) throw errVar;
         }
       }
 
       setFormProd({ titulo: '', categoria: '', descripcion: '', precio: '', precio_oferta: '', imagenes: [] });
-      setFormVariantes([{ medida: '', material: '', color: '', stock: 10, precio: '', precio_oferta: '', imagen_asociada_url: '' }]);
+      setFormVariantes([{ sabor_presentacion: '', detalle: '', stock: 999, precio: '', precio_oferta: '', imagen_asociada_url: '' }]);
       setProductoEditar(null);
       fetchProductos();
       alert('¡Producto y variantes guardados correctamente!');
@@ -785,23 +736,22 @@ export default function App() {
       titulo: prod.titulo || '',
       categoria: prod.categoria || '',
       descripcion: prod.descripcion || '',
-      precio: prod.precio || '',
+      precio: prod.precio_base || '',
       precio_oferta: prod.precio_oferta || '',
       imagenes: imgs
     });
 
     if (prod.variantes && prod.variantes.length > 0) {
       setFormVariantes(prod.variantes.map((v) => ({
-        medida: v.medida || '',
-        material: v.material || '',
-        color: v.color || '',
-        stock: v.stock ?? 10,
+        sabor_presentacion: v.sabor_presentacion || '',
+        detalle: v.detalle || '',
+        stock: v.stock ?? 999,
         precio: v.precio || '',
         precio_oferta: v.precio_oferta || '',
         imagen_asociada_url: v.imagen_asociada_url || ''
       })));
     } else {
-      setFormVariantes([{ medida: '', material: '', color: '', stock: 10, precio: '', precio_oferta: '', imagen_asociada_url: '' }]);
+      setFormVariantes([{ sabor_presentacion: '', detalle: '', stock: 999, precio: '', precio_oferta: '', imagen_asociada_url: '' }]);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -811,7 +761,7 @@ export default function App() {
     if (e) e.stopPropagation();
     if (!confirm('¿Seguro que querés eliminar este producto?')) return;
     try {
-      const { error } = await supabase.from('tienda_el_asombro').delete().eq('id', id);
+      const { error } = await supabase.from('tienda_de_pan_productos').delete().eq('id', id);
       if (error) throw error;
       fetchProductos();
     } catch (err) {
@@ -831,7 +781,7 @@ export default function App() {
       (p) => (p.categoria || '').trim().toLowerCase() === cat.trim().toLowerCase() &&
       ((p.imagenes && p.imagenes[0]) || p.imagen_url)
     );
-    return (prod?.imagenes && prod?.imagenes[0]) || prod?.imagen_url || 'https://res.cloudinary.com/okej62yk/image/upload/v1787762681/frazadas.jpg';
+    return (prod?.imagenes && prod?.imagenes[0]) || prod?.imagen_url || '/logo.jpg';
   };
 
   const productosFiltrados = productos.filter((p) => {
@@ -845,31 +795,20 @@ export default function App() {
     return coincideCategoria && coincideBusqueda && coincideOferta;
   });
 
-  // Valores de medida/material/color ya cargados en CUALQUIER producto del catálogo,
-  // usados como sugerencias (datalist) al cargar variantes en el panel admin.
-  const medidasExistentes = [...new Set(
-    productos.flatMap((p) => (p.variantes || []).map((v) => (v.medida || '').trim())).filter(Boolean)
-  )].sort();
-  const materialesExistentes = [...new Set(
-    productos.flatMap((p) => (p.variantes || []).map((v) => (v.material || '').trim())).filter(Boolean)
-  )].sort();
-  const coloresExistentes = [...new Set(
-    productos.flatMap((p) => (p.variantes || []).map((v) => (v.color || '').trim())).filter(Boolean)
+  const saboresExistentes = [...new Set(
+    productos.flatMap((p) => (p.variantes || []).map((v) => (v.sabor_presentacion || '').trim())).filter(Boolean)
   )].sort();
 
   return (
-    <div className="min-h-screen bg-zinc-100 text-zinc-900 flex flex-col justify-between font-sans antialiased">
+    <div className="min-h-screen bg-amber-50/30 text-zinc-900 flex flex-col justify-between font-sans antialiased">
       <div>
-        {/* Banner Superior Promocional */}
-        <div className="bg-zinc-950 text-amber-400 text-xs sm:text-base py-2.5 px-4 font-bold text-center flex justify-center items-center gap-2 border-b border-amber-500/20">
-          <span>🚀 ENVÍOS RÁPIDOS Y ATENCIÓN PERSONALIZADA POR WHATSAPP</span>
-          <a href={GUIA_CLIC_URL} target="_blank" rel="noreferrer" className="underline font-extrabold flex items-center gap-1 hover:text-amber-300">
-            Ver en GuíaClic <ExternalLink className="w-4 h-4" />
-          </a>
+        {/* Banner Superior Informativo de Envíos */}
+        <div className="bg-amber-950 text-amber-300 text-xs sm:text-sm py-2.5 px-4 font-bold text-center flex justify-center items-center gap-2 border-b border-amber-500/30">
+          <span>🚚 ENVÍOS A DOMICILIO (Mínimo ${configNegocio.monto_minimo_envio || 5000}): {configNegocio.zonas_cobertura}</span>
         </div>
 
         {/* HEADER PRINCIPAL */}
-        <header className="bg-zinc-900 text-white sticky top-0 z-30 shadow-xl border-b border-amber-500/30">
+        <header className="bg-amber-900 text-white sticky top-0 z-30 shadow-xl border-b border-amber-600/30">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
 
             {/* LOGO + NOMBRE */}
@@ -880,11 +819,11 @@ export default function App() {
               <img
                 src={configNegocio.logo_url || '/logo.jpg'}
                 alt={configNegocio.nombre}
-                className="w-14 h-14 rounded-full object-cover shadow-lg border-2 border-amber-400"
+                className="w-14 h-14 rounded-full object-cover shadow-lg border-2 border-amber-300"
               />
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-none text-white">{configNegocio.nombre}</h1>
-                <span className="text-xs sm:text-sm text-amber-400 tracking-widest uppercase font-bold">{configNegocio.subtitulo}</span>
+                <span className="text-xs sm:text-sm text-amber-300 tracking-widest uppercase font-bold">{configNegocio.subtitulo}</span>
               </div>
             </div>
 
@@ -893,12 +832,12 @@ export default function App() {
               <div className="relative">
                 <input
                   type="text"
-                  placeholder="¿Qué producto estás buscando?"
+                  placeholder="¿Qué producto querés pedir?"
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  className="w-full pl-5 pr-12 py-3 rounded-full text-zinc-900 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-inner bg-zinc-100"
+                  className="w-full pl-5 pr-12 py-3 rounded-full text-zinc-900 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-inner bg-white"
                 />
-                <Search className="absolute right-4 top-3.5 w-5 h-5 text-zinc-500" />
+                <Search className="absolute right-4 top-3.5 w-5 h-5 text-zinc-400" />
               </div>
             </div>
 
@@ -906,14 +845,14 @@ export default function App() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setCarritoAbierto(true)}
-                className={`relative p-3 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black rounded-full transition-all duration-300 flex items-center gap-2 px-5 shadow-lg ${
-                  animarCarrito ? 'scale-110 bg-amber-300 ring-4 ring-amber-200' : ''
+                className={`relative p-3 bg-amber-400 hover:bg-amber-300 text-amber-950 font-black rounded-full transition-all duration-300 flex items-center gap-2 px-5 shadow-lg ${
+                  animarCarrito ? 'scale-110 bg-amber-200 ring-4 ring-amber-100' : ''
                 }`}
               >
                 <ShoppingCart className="w-6 h-6" />
-                <span className="text-sm font-black hidden sm:inline uppercase tracking-wider">Carrito</span>
+                <span className="text-sm font-black hidden sm:inline uppercase tracking-wider">Pedido</span>
                 {totalItems > 0 && (
-                  <span className={`bg-zinc-950 text-amber-400 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow transition-transform duration-300 ${
+                  <span className={`bg-amber-950 text-amber-300 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow transition-transform duration-300 ${
                     animarCarrito ? 'scale-150' : 'scale-100'
                   }`}>
                     {totalItems}
@@ -923,7 +862,7 @@ export default function App() {
 
               <button
                 onClick={() => esAdmin ? handleLogoutAdmin() : setModalAdminAbierto(true)}
-                className={`p-3 rounded-full transition-colors ${esAdmin ? 'bg-amber-400 text-zinc-950' : 'hover:bg-zinc-800 text-zinc-300'}`}
+                className={`p-3 rounded-full transition-colors ${esAdmin ? 'bg-amber-300 text-amber-950' : 'hover:bg-amber-800 text-amber-200'}`}
                 title={esAdmin ? 'Cerrar Sesión Admin' : 'Ingresar como Admin'}
               >
                 {esAdmin ? <LogOut className="w-6 h-6" /> : <Lock className="w-6 h-6" />}
@@ -932,25 +871,25 @@ export default function App() {
           </div>
 
           {/* BARRA DE CATEGORÍAS */}
-          <nav className="bg-zinc-950 border-t border-zinc-800 text-sm sm:text-base font-extrabold uppercase tracking-wider overflow-x-auto">
+          <nav className="bg-amber-950 border-t border-amber-800/60 text-sm sm:text-base font-extrabold uppercase tracking-wider overflow-x-auto">
             <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center gap-10 whitespace-nowrap">
               <button
                 onClick={() => { setCategoriaSeleccionada(null); setSoloOfertas(false); setBusqueda(''); }}
-                className={`hover:text-amber-400 transition-colors ${!categoriaSeleccionada && !soloOfertas ? 'text-amber-400 font-black border-b-2 border-amber-400 pb-0.5' : 'text-zinc-200'}`}
+                className={`hover:text-amber-300 transition-colors ${!categoriaSeleccionada && !soloOfertas ? 'text-amber-300 font-black border-b-2 border-amber-300 pb-0.5' : 'text-amber-100'}`}
               >
                 Inicio
               </button>
               <button
                 onClick={() => { setSoloOfertas(true); setCategoriaSeleccionada(null); }}
-                className={`flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors ${soloOfertas ? 'font-black border-b-2 border-amber-400 pb-0.5' : ''}`}
+                className={`flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors ${soloOfertas ? 'font-black border-b-2 border-amber-300 pb-0.5' : ''}`}
               >
-                <Tag className="w-5 h-5 fill-current" /> Ofertas Destacadas
+                <Tag className="w-5 h-5 fill-current" /> Promociones
               </button>
               {categorias.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => { setCategoriaSeleccionada(cat); setSoloOfertas(false); }}
-                  className={`capitalize hover:text-amber-400 transition-colors ${categoriaSeleccionada === cat ? 'text-amber-400 font-black border-b-2 border-amber-400 pb-0.5' : 'text-zinc-200'}`}
+                  className={`capitalize hover:text-amber-300 transition-colors ${categoriaSeleccionada === cat ? 'text-amber-300 font-black border-b-2 border-amber-300 pb-0.5' : 'text-amber-100'}`}
                 >
                   {cat}
                 </button>
@@ -960,48 +899,48 @@ export default function App() {
         </header>
 
         {/* Buscador Mobile */}
-        <div className="md:hidden p-3 bg-white border-b border-zinc-200 shadow-sm">
+        <div className="md:hidden p-3 bg-white border-b border-amber-200 shadow-sm">
           <div className="relative">
             <input
               type="text"
-              placeholder="Buscar productos..."
+              placeholder="Buscar panes, facturas, budines..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-100 text-base font-medium focus:outline-none focus:bg-white border border-zinc-200"
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-amber-50/50 text-base font-medium focus:outline-none focus:bg-white border border-amber-200"
             />
-            <Search className="absolute left-3.5 top-3.5 w-5 h-5 text-zinc-400" />
+            <Search className="absolute left-3.5 top-3.5 w-5 h-5 text-amber-400" />
           </div>
         </div>
 
-        {/* BANNER FULL WIDTH */}
+        {/* BANNER PORTADA */}
         {!categoriaSeleccionada && !busqueda && !soloOfertas && (
-          <section className="relative w-full min-h-[420px] sm:min-h-[520px] lg:min-h-[600px] flex items-center justify-center bg-zinc-950 overflow-hidden border-b border-amber-500/20">
+          <section className="relative w-full min-h-[420px] sm:min-h-[520px] lg:min-h-[580px] flex items-center justify-center bg-amber-950 overflow-hidden border-b border-amber-700/30">
             <img
-              src={(productos[0]?.imagenes && productos[0]?.imagenes[0]) || productos[0]?.imagen_url || "https://res.cloudinary.com/okej62yk/image/upload/v1787769438/logo.jpg"}
-              alt="Banner Principal Tienda El Asombro"
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
+              src={(productos[0]?.imagenes && productos[0]?.imagenes[0]) || productos[0]?.imagen_url || configNegocio.logo_url}
+              alt="Banner Principal Panadería"
+              className="absolute inset-0 w-full h-full object-cover opacity-35"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-amber-950 via-amber-950/60 to-transparent" />
 
             <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 text-center md:text-left flex flex-col items-center md:items-start space-y-6">
-              <span className="bg-amber-400 text-zinc-950 text-xs sm:text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg inline-flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4" /> SURTIDO DE ASOMBRO
+              <span className="bg-amber-400 text-amber-950 text-xs sm:text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg inline-flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4" /> VENTA MAYORISTA & REPARTO
               </span>
 
               <h2 className="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight leading-none text-white max-w-4xl drop-shadow-md">
-                DESCUBRÍ LO NUEVO PARA TU HOGAR
+                PANADERÍA Y PASTELERÍA ARTESANAL
               </h2>
 
-              <p className="text-zinc-200 text-base sm:text-xl lg:text-2xl font-medium leading-relaxed max-w-2xl drop-shadow">
-                Blanquería, indumentaria, bazar y novedades con el mejor precio y atención personalizada.
+              <p className="text-amber-100 text-base sm:text-xl lg:text-2xl font-medium leading-relaxed max-w-2xl drop-shadow">
+                Hacé tu pedido online y te lo llevamos directamente a tu negocio o domicilio.
               </p>
 
               <div className="pt-2">
                 <button
                   onClick={() => setSoloOfertas(true)}
-                  className="bg-amber-400 hover:bg-amber-500 text-zinc-950 px-8 py-4 rounded-2xl font-black text-sm sm:text-lg uppercase tracking-wider shadow-2xl transition-transform hover:scale-105 border-2 border-amber-300"
+                  className="bg-amber-400 hover:bg-amber-300 text-amber-950 px-8 py-4 rounded-2xl font-black text-sm sm:text-lg uppercase tracking-wider shadow-2xl transition-transform hover:scale-105 border-2 border-amber-300"
                 >
-                  VER OFERTAS DESTACADAS
+                  VER PROMOCIONES DESTACADAS
                 </button>
               </div>
             </div>
@@ -1010,96 +949,93 @@ export default function App() {
 
         {/* PANEL ADMIN */}
         {esAdmin && (
-          <section className="bg-zinc-900 text-white border-2 border-amber-500/40 p-6 max-w-7xl mx-auto my-6 rounded-2xl shadow-xl space-y-6">
-            <div className="flex justify-between items-center pb-2 border-b border-zinc-800">
-              <div className="flex items-center gap-2 text-amber-400 font-black text-lg sm:text-xl uppercase tracking-wide">
-                <KeyRound className="w-6 h-6 text-amber-400" /> Panel de Administración
+          <section className="bg-amber-900 text-white border-2 border-amber-500/40 p-6 max-w-7xl mx-auto my-6 rounded-2xl shadow-xl space-y-6">
+            <div className="flex justify-between items-center pb-2 border-b border-amber-800">
+              <div className="flex items-center gap-2 text-amber-300 font-black text-lg sm:text-xl uppercase tracking-wide">
+                <KeyRound className="w-6 h-6 text-amber-300" /> Panel de Administración
               </div>
               <button
                 onClick={handleLogoutAdmin}
-                className="text-xs font-bold bg-zinc-800 hover:bg-zinc-700 px-3.5 py-1.5 rounded-lg text-amber-400 flex items-center gap-1 border border-zinc-700"
+                className="text-xs font-bold bg-amber-950 hover:bg-amber-800 px-3.5 py-1.5 rounded-lg text-amber-300 flex items-center gap-1 border border-amber-800"
               >
-                <LogOut className="w-3.5 h-3.5" /> Cerrar Sesión Admin
+                <LogOut className="w-3.5 h-3.5" /> Cerrar Sesión
               </button>
             </div>
 
-            {/* EDICIÓN DE MARCA Y LOGO */}
-            <form onSubmit={guardarConfigNegocio} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-4 shadow-sm">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                <Settings className="w-4 h-4" /> Configuración de la Marca
+            {/* CONFIGURACIÓN NEGOCIO */}
+            <form onSubmit={guardarConfigNegocio} className="bg-amber-950 p-5 rounded-xl border border-amber-800 space-y-4 shadow-sm">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                <Settings className="w-4 h-4" /> Configuración de la Panadería
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-zinc-300 block mb-1">Nombre del Negocio</label>
+                  <label className="text-xs font-bold text-amber-200 block mb-1">Nombre del Negocio</label>
                   <input
                     type="text"
                     required
-                    placeholder="TIENDA EL ASOMBRO"
                     value={configNegocio.nombre}
                     onChange={(e) => setConfigNegocio({ ...configNegocio, nombre: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-zinc-300 block mb-1">Subtítulo / Rubro</label>
+                  <label className="text-xs font-bold text-amber-200 block mb-1">Subtítulo / Rubro</label>
                   <input
                     type="text"
                     required
-                    placeholder="BLANQUERÍA, NOVEDADES & BAZAR"
                     value={configNegocio.subtitulo}
                     onChange={(e) => setConfigNegocio({ ...configNegocio, subtitulo: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-zinc-300 block mb-1">WhatsApp de Pedidos</label>
+                  <label className="text-xs font-bold text-amber-200 block mb-1">WhatsApp de Pedidos</label>
                   <input
                     type="text"
                     required
-                    placeholder="5493462368051"
                     value={configNegocio.whatsapp}
                     onChange={(e) => setConfigNegocio({ ...configNegocio, whatsapp: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-zinc-300 block mb-1">Logo del Negocio</label>
-                  <div className="flex items-center gap-3">
-                    <label className="cursor-pointer bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 shadow transition-colors">
-                      {subiendoLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                      {subiendoLogo ? 'Subiendo...' : '📷 Cambiar Logo'}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleSubirImagen(e, true)}
-                        disabled={subiendoLogo}
-                        className="hidden"
-                      />
-                    </label>
+                  <label className="text-xs font-bold text-amber-200 block mb-1">Monto Mínimo de Envío ($)</label>
+                  <input
+                    type="number"
+                    required
+                    value={configNegocio.monto_minimo_envio}
+                    onChange={(e) => setConfigNegocio({ ...configNegocio, monto_minimo_envio: e.target.value })}
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                  />
+                </div>
 
-                    {configNegocio.logo_url && (
-                      <img src={configNegocio.logo_url} alt="Logo previo" className="w-9 h-9 object-cover rounded-full border border-amber-400 shadow-sm" />
-                    )}
-                  </div>
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-bold text-amber-200 block mb-1">Zonas de Cobertura</label>
+                  <input
+                    type="text"
+                    required
+                    value={configNegocio.zonas_cobertura}
+                    onChange={(e) => setConfigNegocio({ ...configNegocio, zonas_cobertura: e.target.value })}
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                  />
                 </div>
               </div>
 
               <button
                 type="submit"
-                disabled={subiendoLogo}
-                className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 shadow disabled:opacity-50"
+                className="bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 shadow"
               >
-                <Check className="w-4 h-4" /> Guardar Cambios de Marca
+                <Check className="w-4 h-4" /> Guardar Configuración
               </button>
             </form>
 
-            {/* CARGA DE PRODUCTOS Y VARIANTES */}
-            <form onSubmit={guardarProducto} className="bg-zinc-950 p-5 rounded-xl border border-zinc-800 space-y-6 shadow-sm text-zinc-200">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-400">
+            {/* CARGA PRODUCTOS */}
+            <form onSubmit={guardarProducto} className="bg-amber-950 p-5 rounded-xl border border-amber-800 space-y-6 shadow-sm text-amber-100">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-300">
                 {productoEditar ? '✏️ Modificar Producto' : '➕ PUBLICAR NUEVO PRODUCTO'}
               </h4>
 
@@ -1109,22 +1045,22 @@ export default function App() {
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Frazada Térmica 2 Plazas"
+                    placeholder="Ej. Budín Artesanal"
                     value={formProd.titulo}
                     onChange={(e) => setFormProd({ ...formProd, titulo: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold block mb-1">Rubro / Categoría</label>
+                  <label className="text-xs font-bold block mb-1">Categoría</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Frazadas, Bazar, Regalería..."
+                    placeholder="Ej. Budines, Facturas, Panes, Tartas..."
                     value={formProd.categoria}
                     onChange={(e) => setFormProd({ ...formProd, categoria: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
 
@@ -1133,30 +1069,30 @@ export default function App() {
                   <input
                     type="number"
                     required
-                    placeholder="12000"
+                    placeholder="2500"
                     value={formProd.precio}
                     onChange={(e) => setFormProd({ ...formProd, precio: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-rose-400 block mb-1">Precio Oferta Base ($ - Opcional)</label>
+                  <label className="text-xs font-bold text-rose-300 block mb-1">Precio Oferta ($ - Opcional)</label>
                   <input
                     type="number"
-                    placeholder="Dejar vacío si no hay oferta"
+                    placeholder="Opcional"
                     value={formProd.precio_oferta}
                     onChange={(e) => setFormProd({ ...formProd, precio_oferta: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-rose-900/60 rounded-lg text-sm text-white focus:ring-2 focus:ring-rose-500"
+                    className="w-full p-2.5 bg-amber-900 border border-rose-900/60 rounded-lg text-sm text-white focus:ring-2 focus:ring-rose-500"
                   />
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold block mb-1">Imágenes Generales del Producto (Múltiples fotos)</label>
+                  <label className="text-xs font-bold block mb-1">Fotos del Producto</label>
                   <div className="flex flex-wrap items-center gap-3">
-                    <label className="cursor-pointer bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 shadow transition-colors">
+                    <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 shadow transition-colors">
                       {subiendoImagen ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                      {subiendoImagen ? 'Subiendo fotos...' : '📷 Agregar Fotos General'}
+                      {subiendoImagen ? 'Subiendo...' : '📷 Agregar Fotos'}
                       <input
                         type="file"
                         multiple
@@ -1168,7 +1104,7 @@ export default function App() {
                     </label>
 
                     {formProd.imagenes.map((url, idx) => (
-                      <div key={idx} className="relative group w-10 h-10 border border-zinc-700 rounded-lg overflow-hidden">
+                      <div key={idx} className="relative group w-10 h-10 border border-amber-700 rounded-lg overflow-hidden">
                         <img src={url} alt="Cargada" className="w-full h-full object-cover" />
                         <button
                           type="button"
@@ -1183,123 +1119,85 @@ export default function App() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label className="text-xs font-bold block mb-1">Descripción Detallada</label>
+                  <label className="text-xs font-bold block mb-1">Descripción</label>
                   <textarea
                     rows={2}
-                    placeholder="Escribí características del producto, calidad, materiales, etc."
+                    placeholder="Descripción, ingredientes, peso aproximado o presentación..."
                     value={formProd.descripcion}
                     onChange={(e) => setFormProd({ ...formProd, descripcion: e.target.value })}
-                    className="w-full p-2.5 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
+                    className="w-full p-2.5 bg-amber-900 border border-amber-800 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
               </div>
 
-              {/* GESTIÓN DE VARIANTES CON FOTO ESPECÍFICA */}
-              <div className="border-t border-zinc-800 pt-4 space-y-3">
+              {/* VARIANTES PARA PANADERÍA */}
+              <div className="border-t border-amber-800 pt-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <h5 className="text-xs font-extrabold uppercase tracking-wider text-zinc-300">
-                    Variantes de Producto (Medida / Material / Color / Stock / Precio / Foto)
+                  <h5 className="text-xs font-extrabold uppercase tracking-wider text-amber-200">
+                    Variantes (Sabor / Presentación / Precio)
                   </h5>
                   <button
                     type="button"
-                    onClick={() => setFormVariantes(prev => [...prev, { medida: '', material: '', color: '', stock: 10, precio: '', precio_oferta: '', imagen_asociada_url: '' }])}
-                    className="text-xs font-bold bg-amber-500 text-zinc-950 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-amber-400"
+                    onClick={() => setFormVariantes(prev => [...prev, { sabor_presentacion: '', detalle: '', stock: 999, precio: '', precio_oferta: '', imagen_asociada_url: '' }])}
+                    className="text-xs font-bold bg-amber-400 text-amber-950 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-amber-300"
                   >
                     <Plus className="w-3.5 h-3.5" /> Agregar Variante
                   </button>
                 </div>
 
-                {/* Sugerencias de valores ya usados: el input sigue siendo libre, pero el
-                    navegador ofrece autocompletar con lo ya cargado en el catálogo. */}
-                <datalist id="datalist-medidas-asombro">
-                  {medidasExistentes.map((m) => <option key={m} value={m} />)}
-                </datalist>
-                <datalist id="datalist-materiales-asombro">
-                  {materialesExistentes.map((m) => <option key={m} value={m} />)}
-                </datalist>
-                <datalist id="datalist-colores-asombro">
-                  {coloresExistentes.map((c) => <option key={c} value={c} />)}
+                <datalist id="datalist-sabores">
+                  {saboresExistentes.map((s) => <option key={s} value={s} />)}
                 </datalist>
 
                 {formVariantes.map((v, idx) => (
-                  <div key={idx} className="bg-zinc-900 p-3 rounded-xl border border-zinc-800 grid grid-cols-1 sm:grid-cols-3 md:grid-cols-7 gap-3 items-center">
+                  <div key={idx} className="bg-amber-900 p-3 rounded-xl border border-amber-800 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center">
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">Medida/Talle</label>
+                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Sabor / Presentación</label>
                       <input
                         type="text"
-                        list="datalist-medidas-asombro"
-                        placeholder="2 1/2"
-                        value={v.medida}
+                        list="datalist-sabores"
+                        placeholder="Ej: Limón glaseado / Por Kilo"
+                        value={v.sabor_presentacion}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, medida: val } : item));
+                          setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, sabor_presentacion: val } : item));
                         }}
-                        className="w-full p-2 border border-zinc-700 rounded-lg text-xs font-medium bg-zinc-950 text-white"
+                        className="w-full p-2 border border-amber-700 rounded-lg text-xs font-medium bg-amber-950 text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">Material</label>
+                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Detalle / Envase</label>
                       <input
                         type="text"
-                        list="datalist-materiales-asombro"
-                        placeholder="Algodón"
-                        value={v.material}
+                        placeholder="Ej: Caja x 12u"
+                        value={v.detalle}
                         onChange={(e) => {
                           const val = e.target.value;
-                          setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, material: val } : item));
+                          setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, detalle: val } : item));
                         }}
-                        className="w-full p-2 border border-zinc-700 rounded-lg text-xs font-medium bg-zinc-950 text-white"
+                        className="w-full p-2 border border-amber-700 rounded-lg text-xs font-medium bg-amber-950 text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">Color</label>
-                      <input
-                        type="text"
-                        list="datalist-colores-asombro"
-                        placeholder="Blanco"
-                        value={v.color}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, color: val } : item));
-                        }}
-                        className="w-full p-2 border border-zinc-700 rounded-lg text-xs font-medium bg-zinc-950 text-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">Stock</label>
+                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Precio Variante ($)</label>
                       <input
                         type="number"
-                        placeholder="10"
-                        value={v.stock}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, stock: val } : item));
-                        }}
-                        className="w-full p-2 border border-zinc-700 rounded-lg text-xs font-medium bg-zinc-950 text-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">Precio Variante</label>
-                      <input
-                        type="number"
-                        placeholder="Si difiere"
+                        placeholder="Si difiere del base"
                         value={v.precio}
                         onChange={(e) => {
                           const val = e.target.value;
                           setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, precio: val } : item));
                         }}
-                        className="w-full p-2 border border-zinc-700 rounded-lg text-xs font-medium bg-zinc-950 text-white"
+                        className="w-full p-2 border border-amber-700 rounded-lg text-xs font-medium bg-amber-950 text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-zinc-400 block mb-1">Foto Variante</label>
+                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Foto Variante</label>
                       <div className="flex items-center gap-2">
-                        <label className="cursor-pointer bg-zinc-800 hover:bg-zinc-700 text-amber-400 text-[11px] font-bold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1.5 w-full shadow-sm transition-colors border border-zinc-700">
+                        <label className="cursor-pointer bg-amber-800 hover:bg-amber-700 text-amber-200 text-[11px] font-bold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1.5 w-full shadow-sm transition-colors border border-amber-700">
                           {subiendoImagenVarIdx === idx ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                           <span>{v.imagen_asociada_url ? 'Cambiar' : 'Subir'}</span>
                           <input
@@ -1312,7 +1210,7 @@ export default function App() {
                         </label>
 
                         {v.imagen_asociada_url && (
-                          <div className="relative group w-8 h-8 border border-zinc-700 rounded-lg overflow-hidden flex-shrink-0">
+                          <div className="relative group w-8 h-8 border border-amber-700 rounded-lg overflow-hidden flex-shrink-0">
                             <img src={v.imagen_asociada_url} alt="Variante" className="w-full h-full object-cover" />
                             <button
                               type="button"
@@ -1342,11 +1240,11 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="pt-4 border-t border-zinc-800">
+              <div className="pt-4 border-t border-amber-800">
                 <button
                   type="submit"
                   disabled={subiendoImagen || subiendoImagenVarIdx !== null}
-                  className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs uppercase tracking-wider py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                  className="w-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs uppercase tracking-wider py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" /> {productoEditar ? 'Guardar Cambios del Producto' : 'Publicar Producto'}
                 </button>
@@ -1359,21 +1257,21 @@ export default function App() {
         <main className="max-w-7xl mx-auto px-4 py-8">
           {categoriaSeleccionada || busqueda || soloOfertas ? (
             <div>
-              <div className="flex items-center justify-between mb-6 pb-3 border-b border-zinc-300">
+              <div className="flex items-center justify-between mb-6 pb-3 border-b border-amber-200">
                 <button
                   onClick={() => { setCategoriaSeleccionada(null); setBusqueda(''); setSoloOfertas(false); }}
-                  className="flex items-center gap-1.5 text-xs font-extrabold text-amber-600 hover:underline uppercase tracking-wider"
+                  className="flex items-center gap-1.5 text-xs font-extrabold text-amber-800 hover:underline uppercase tracking-wider"
                 >
                   <ArrowLeft className="w-4 h-4" /> Volver a la portada
                 </button>
                 <h2 className="text-xl font-black text-zinc-900 uppercase tracking-tight">
-                  {soloOfertas ? '🔥 Ofertas Destacadas' : categoriaSeleccionada || `Búsqueda: "${busqueda}"`}
+                  {soloOfertas ? '🔥 Promociones Destacadas' : categoriaSeleccionada || `Búsqueda: "${busqueda}"`}
                 </h2>
               </div>
 
               {productosFiltrados.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-3xl border border-zinc-200 text-zinc-500 text-base font-semibold">
-                  No encontramos productos para esta sección.
+                <div className="text-center py-20 bg-white rounded-3xl border border-amber-200 text-zinc-500 text-base font-semibold">
+                  No encontramos productos en esta sección.
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
@@ -1385,7 +1283,7 @@ export default function App() {
                       <div
                         key={prod.id}
                         onClick={() => abrirDetalleProducto(prod)}
-                        className="bg-white rounded-3xl overflow-hidden border border-zinc-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between relative group cursor-pointer"
+                        className="bg-white rounded-3xl overflow-hidden border border-amber-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between relative group cursor-pointer"
                       >
                         {tieneOferta && (
                           <div className="absolute top-3 left-3 z-10 bg-rose-600 text-white text-xs font-black uppercase px-3 py-1 rounded-full shadow-md">
@@ -1398,7 +1296,7 @@ export default function App() {
                             className="absolute top-2 right-2 z-20 flex gap-1 bg-white/95 backdrop-blur-sm p-1 rounded-xl shadow"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button onClick={(e) => editarProducto(prod, e)} className="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg">
+                            <button onClick={(e) => editarProducto(prod, e)} className="p-1.5 text-amber-700 hover:bg-amber-50 rounded-lg">
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button onClick={(e) => eliminarProducto(prod.id, e)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg">
@@ -1408,11 +1306,11 @@ export default function App() {
                         )}
 
                         <div>
-                          <div className="h-52 sm:h-64 w-full bg-zinc-100 relative overflow-hidden">
+                          <div className="h-52 sm:h-64 w-full bg-amber-50 relative overflow-hidden">
                             {fotoPrincipal ? (
                               <img src={fotoPrincipal} alt={prod.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+                              <div className="w-full h-full flex flex-col items-center justify-center text-amber-300">
                                 <ImageIcon className="w-10 h-10 mb-1" />
                                 <span className="text-xs font-semibold">Sin imagen</span>
                               </div>
@@ -1420,7 +1318,7 @@ export default function App() {
                           </div>
 
                           <div className="p-4">
-                            <span className="text-xs font-black text-amber-600 uppercase tracking-widest">{prod.categoria}</span>
+                            <span className="text-xs font-black text-amber-700 uppercase tracking-widest">{prod.categoria}</span>
                             <h3 className="font-extrabold text-base sm:text-lg text-zinc-900 line-clamp-2 mt-1 leading-snug">{prod.titulo}</h3>
                             {prod.descripcion && (
                               <p className="text-xs sm:text-sm text-zinc-500 line-clamp-2 mt-1">{prod.descripcion}</p>
@@ -1430,10 +1328,10 @@ export default function App() {
                               {tieneOferta ? (
                                 <>
                                   <span className="text-xl sm:text-2xl font-black text-rose-600">${prod.precio_oferta}</span>
-                                  <span className="text-xs sm:text-sm text-zinc-400 line-through font-bold">${prod.precio}</span>
+                                  <span className="text-xs sm:text-sm text-zinc-400 line-through font-bold">${prod.precio_base}</span>
                                 </>
                               ) : (
-                                <span className="text-xl sm:text-2xl font-black text-zinc-900">${prod.precio}</span>
+                                <span className="text-xl sm:text-2xl font-black text-zinc-900">${prod.precio_base}</span>
                               )}
                             </div>
                           </div>
@@ -1441,9 +1339,9 @@ export default function App() {
 
                         <div className="p-4 pt-0">
                           <button
-                            className="w-full py-3 bg-zinc-950 group-hover:bg-amber-500 group-hover:text-zinc-950 text-amber-400 border border-amber-400/30 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md"
+                            className="w-full py-3 bg-amber-950 group-hover:bg-amber-400 group-hover:text-amber-950 text-amber-300 border border-amber-400/30 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md"
                           >
-                            Ver Producto
+                            Ver Opciones
                           </button>
                         </div>
                       </div>
@@ -1453,11 +1351,11 @@ export default function App() {
               )}
             </div>
           ) : (
-            /* SECCIÓN RUBROS EN LA PORTADA */
+            /* CATEGORÍAS EN PORTADA */
             <section>
               <div className="text-center mb-10">
-                <span className="text-sm font-black uppercase tracking-widest text-amber-600">SECCIONES DESTACADAS</span>
-                <h3 className="text-3xl sm:text-5xl font-black text-zinc-900 uppercase tracking-tight mt-1">NUESTROS RUBROS</h3>
+                <span className="text-sm font-black uppercase tracking-widest text-amber-800">VARIEDAD ARTESANAL</span>
+                <h3 className="text-3xl sm:text-5xl font-black text-zinc-900 uppercase tracking-tight mt-1">NUESTROS PRODUCTOS</h3>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
@@ -1465,20 +1363,20 @@ export default function App() {
                   <div
                     key={cat}
                     onClick={() => setCategoriaSeleccionada(cat)}
-                    className="group relative h-80 sm:h-96 rounded-3xl overflow-hidden shadow-lg cursor-pointer flex items-end p-6 border border-zinc-200 transition-transform duration-300 hover:-translate-y-2"
+                    className="group relative h-80 sm:h-96 rounded-3xl overflow-hidden shadow-lg cursor-pointer flex items-end p-6 border border-amber-200 transition-transform duration-300 hover:-translate-y-2"
                   >
                     <img
                       src={obtenerImagenCategoria(cat)}
                       alt={cat}
                       className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/85 via-zinc-950/30 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-amber-950/85 via-amber-950/30 to-transparent" />
 
-                    <div className="relative z-10 w-full bg-zinc-950/90 backdrop-blur-md p-5 rounded-2xl text-center shadow-2xl border border-amber-500/20">
-                      <span className="text-xs font-black text-amber-400 uppercase tracking-widest">RUBRO</span>
+                    <div className="relative z-10 w-full bg-amber-950/90 backdrop-blur-md p-5 rounded-2xl text-center shadow-2xl border border-amber-500/20">
+                      <span className="text-xs font-black text-amber-300 uppercase tracking-widest">CATEGORÍA</span>
                       <h4 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider mt-0.5">{cat}</h4>
-                      <span className="inline-block mt-3 px-5 py-2.5 bg-amber-500 text-zinc-950 text-xs sm:text-sm font-black rounded-xl uppercase tracking-wider transition-colors shadow-md">
-                        EXPLORAR PRODUCTOS
+                      <span className="inline-block mt-3 px-5 py-2.5 bg-amber-400 text-amber-950 text-xs sm:text-sm font-black rounded-xl uppercase tracking-wider transition-colors shadow-md">
+                        VER PRODUCTOS
                       </span>
                     </div>
                   </div>
@@ -1489,7 +1387,7 @@ export default function App() {
         </main>
       </div>
 
-      {/* MODAL DETALLE DE PRODUCTO ESTILO TIENDANUBE (con galería, variantes, zoom y compartir) */}
+      {/* MODAL DETALLE DE PRODUCTO */}
       {productoDetalle && (() => {
         const infoPrecio = obtenerPrecioActual();
         const galeriaCompleta = construirGaleria(productoDetalle);
@@ -1506,9 +1404,8 @@ export default function App() {
             const nuevoIndex = (prev + 1) % listaImagenes.length;
             const item = galeriaCompleta[nuevoIndex];
             if (item?.variante) {
-              setMedidaSel(item.variante.medida || '');
-              setMaterialSel(item.variante.material || '');
-              setColorSel(item.variante.color || '');
+              setSaborSel(item.variante.sabor_presentacion || '');
+              setDetalleSel(item.variante.detalle || '');
             }
             return nuevoIndex;
           });
@@ -1522,9 +1419,8 @@ export default function App() {
             const nuevoIndex = (prev - 1 + listaImagenes.length) % listaImagenes.length;
             const item = galeriaCompleta[nuevoIndex];
             if (item?.variante) {
-              setMedidaSel(item.variante.medida || '');
-              setMaterialSel(item.variante.material || '');
-              setColorSel(item.variante.color || '');
+              setSaborSel(item.variante.sabor_presentacion || '');
+              setDetalleSel(item.variante.detalle || '');
             }
             return nuevoIndex;
           });
@@ -1535,14 +1431,11 @@ export default function App() {
           setImagenActivaIndex(idx);
           setImagenVarianteDirecta(null);
           if (item?.variante) {
-            setMedidaSel(item.variante.medida || '');
-            setMaterialSel(item.variante.material || '');
-            setColorSel(item.variante.color || '');
+            setSaborSel(item.variante.sabor_presentacion || '');
+            setDetalleSel(item.variante.detalle || '');
           }
         };
 
-        // Zoom estilo MercadoLibre/Tiendanube: seguir el mouse para definir el
-        // punto de la imagen que queda centrado al ampliarla.
         const manejarMouseMoveZoom = (e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const x = ((e.clientX - rect.left) / rect.width) * 100;
@@ -1601,23 +1494,22 @@ export default function App() {
         };
 
         const variantes = productoDetalle.variantes || [];
-        const medidasDisponibles = [...new Set(variantes.map(v => v.medida).filter(Boolean))];
-        const materialesDisponibles = [...new Set(variantes.map(v => v.material).filter(Boolean))];
-        const coloresDisponibles = [...new Set(variantes.map(v => v.color).filter(Boolean))];
+        const saboresDisponibles = [...new Set(variantes.map(v => v.sabor_presentacion).filter(Boolean))];
+        const detallesDisponibles = [...new Set(variantes.map(v => v.detalle).filter(Boolean))];
 
         return (
           <>
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
-            <div className="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-zinc-100 my-auto relative flex flex-col md:flex-row">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-amber-950/70 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
+            <div className="bg-white rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl border border-amber-100 my-auto relative flex flex-col md:flex-row">
               <button
                 onClick={cerrarDetalle}
-                className="absolute top-4 right-4 z-20 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 p-2 rounded-full transition-colors"
+                className="absolute top-4 right-4 z-20 bg-amber-50 hover:bg-amber-100 text-amber-900 p-2 rounded-full transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
 
               {/* GALERÍA DE FOTOS */}
-              <div className="w-full md:w-1/2 p-6 bg-zinc-50 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-zinc-200">
+              <div className="w-full md:w-1/2 p-6 bg-amber-50/40 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-amber-200">
                 <div
                   className="w-full h-80 sm:h-[28rem] rounded-2xl overflow-hidden bg-white shadow-inner relative flex items-center justify-center group touch-pan-y cursor-zoom-in"
                   onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX; }}
@@ -1644,11 +1536,11 @@ export default function App() {
                       draggable={false}
                     />
                   ) : (
-                    <ImageIcon className="w-12 h-12 text-zinc-300" />
+                    <ImageIcon className="w-12 h-12 text-amber-300" />
                   )}
 
                   {imagenAMostrar && (
-                    <div className="absolute bottom-3 right-3 z-10 bg-white/90 text-zinc-700 p-2 rounded-full shadow pointer-events-none">
+                    <div className="absolute bottom-3 right-3 z-10 bg-white/90 text-amber-900 p-2 rounded-full shadow pointer-events-none">
                       <ZoomIn className="w-4 h-4" />
                     </div>
                   )}
@@ -1675,15 +1567,15 @@ export default function App() {
                   )}
                 </div>
 
-                {/* MINIATURAS: fotos generales + foto de cada variante */}
+                {/* MINIATURAS */}
                 {listaImagenes.length > 1 && (
                   <div className="flex items-center gap-3 mt-4 overflow-x-auto max-w-full pb-2">
                     {galeriaCompleta.map((item, idx) => (
                       <button
                         key={idx}
                         onClick={() => seleccionarFoto(idx)}
-                        title={item.variante ? [item.variante.medida, item.variante.material, item.variante.color].filter(Boolean).join(' / ') : undefined}
-                        className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${(!imagenVarianteDirecta && imagenActivaIndex === idx) ? 'border-amber-500 scale-105 shadow' : 'border-zinc-200 opacity-60'}`}
+                        title={item.variante ? [item.variante.sabor_presentacion, item.variante.detalle].filter(Boolean).join(' / ') : undefined}
+                        className={`w-14 h-14 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${(!imagenVarianteDirecta && imagenActivaIndex === idx) ? 'border-amber-500 scale-105 shadow' : 'border-amber-200 opacity-60'}`}
                       >
                         <img src={item.url} alt="Miniatura" className="w-full h-full object-cover" />
                       </button>
@@ -1692,19 +1584,19 @@ export default function App() {
                 )}
               </div>
 
-              {/* DETALLES Y OPCIONES DE VARIANTE */}
+              {/* DETALLES DE VARIANTES */}
               <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-between space-y-6">
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-xs font-black text-amber-600 uppercase tracking-widest">{productoDetalle.categoria}</span>
+                      <span className="text-xs font-black text-amber-700 uppercase tracking-widest">{productoDetalle.categoria}</span>
                       <h2 className="text-2xl font-black text-zinc-900 leading-tight mt-1">{productoDetalle.titulo}</h2>
                     </div>
                     <button
                       onClick={compartirProducto}
                       aria-label="Compartir"
                       title="Compartir"
-                      className="flex-shrink-0 flex items-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 px-3 py-2 rounded-xl transition-colors"
+                      className="flex-shrink-0 flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 px-3 py-2 rounded-xl transition-colors"
                     >
                       <Share2 className="w-4 h-4" />
                       <span className="text-[11px] font-black uppercase tracking-wide hidden sm:inline">Compartir</span>
@@ -1719,69 +1611,48 @@ export default function App() {
                   </div>
 
                   {productoDetalle.descripcion && (
-                    <p className="text-xs text-zinc-600 leading-relaxed font-medium bg-zinc-50 p-3 rounded-xl border border-zinc-100">
+                    <p className="text-xs text-zinc-600 leading-relaxed font-medium bg-amber-50/50 p-3 rounded-xl border border-amber-100">
                       {productoDetalle.descripcion}
                     </p>
                   )}
 
-                  {/* SELECTORES DE VARIANTES */}
+                  {/* SELECTORES DE SABOR Y DETALLE */}
                   <div className="space-y-3 pt-2">
-                    {medidasDisponibles.length > 0 && (
+                    {saboresDisponibles.length > 0 && (
                       <div>
-                        <label className="text-xs font-bold text-zinc-700 block mb-1">Medida / Talle:</label>
+                        <label className="text-xs font-bold text-zinc-700 block mb-1">Sabor / Presentación:</label>
                         <select
-                          value={medidaSel}
-                          onChange={(e) => handleCambioVariante('medida', e.target.value)}
-                          className="w-full p-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
+                          value={saborSel}
+                          onChange={(e) => handleCambioVariante('sabor', e.target.value)}
+                          className="w-full p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
                         >
-                          {medidasDisponibles.map((m) => (
-                            <option key={m} value={m}>{m}</option>
+                          {saboresDisponibles.map((s) => (
+                            <option key={s} value={s}>{s}</option>
                           ))}
                         </select>
                       </div>
                     )}
 
-                    {materialesDisponibles.length > 0 && (
+                    {detallesDisponibles.length > 0 && (
                       <div>
-                        <label className="text-xs font-bold text-zinc-700 block mb-1">Material:</label>
+                        <label className="text-xs font-bold text-zinc-700 block mb-1">Detalle / Empaque:</label>
                         <select
-                          value={materialSel}
-                          onChange={(e) => handleCambioVariante('material', e.target.value)}
-                          className="w-full p-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
+                          value={detalleSel}
+                          onChange={(e) => handleCambioVariante('detalle', e.target.value)}
+                          className="w-full p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
                         >
-                          {materialesDisponibles.map((mat) => (
-                            <option key={mat} value={mat}>{mat}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {coloresDisponibles.length > 0 && (
-                      <div>
-                        <label className="text-xs font-bold text-zinc-700 block mb-1">Color:</label>
-                        <select
-                          value={colorSel}
-                          onChange={(e) => handleCambioVariante('color', e.target.value)}
-                          className="w-full p-2.5 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
-                        >
-                          {coloresDisponibles.map((col) => (
-                            <option key={col} value={col}>{col}</option>
+                          {detallesDisponibles.map((d) => (
+                            <option key={d} value={d}>{d}</option>
                           ))}
                         </select>
                       </div>
                     )}
                   </div>
 
-                  {/* INDICADOR DE STOCK Y CANTIDAD */}
-                  <div className="pt-2 flex items-center justify-between border-t border-zinc-100">
-                    <div>
-                      <span className="text-[11px] font-black uppercase tracking-wider block text-zinc-500">Stock disponible:</span>
-                      <span className={`text-xs font-black ${infoPrecio.stock > 0 ? 'text-emerald-700' : 'text-rose-600'}`}>
-                        {infoPrecio.stock > 0 ? `${infoPrecio.stock} unidades` : 'Sin stock'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center border border-zinc-300 rounded-xl bg-zinc-50">
+                  {/* CANTIDAD */}
+                  <div className="pt-2 flex items-center justify-between border-t border-amber-100">
+                    <span className="text-[11px] font-black uppercase tracking-wider block text-zinc-500">Cantidad:</span>
+                    <div className="flex items-center border border-amber-300 rounded-xl bg-amber-50/50">
                       <button
                         onClick={() => setCantidadSel(prev => Math.max(1, prev - 1))}
                         className="p-2 text-zinc-600 hover:text-zinc-900"
@@ -1791,9 +1662,8 @@ export default function App() {
                       </button>
                       <span className="px-3 text-xs font-black">{cantidadSel}</span>
                       <button
-                        onClick={() => setCantidadSel(prev => Math.min(infoPrecio.stock, prev + 1))}
+                        onClick={() => setCantidadSel(prev => prev + 1)}
                         className="p-2 text-zinc-600 hover:text-zinc-900"
-                        disabled={cantidadSel >= infoPrecio.stock}
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -1801,31 +1671,21 @@ export default function App() {
                   </div>
                 </div>
 
-                {tieneVariantes && !varianteActual && (
-                  <p className="text-[11px] font-bold text-rose-600 text-center -mt-2">
-                    Esa combinación no está disponible. Probá con otra opción.
-                  </p>
-                )}
-
-                {/* BOTÓN AGREGAR AL CARRITO */}
                 <button
                   onClick={agregarAlCarritoDesdeDetalle}
-                  disabled={infoPrecio.stock <= 0}
-                  className="w-full py-4 bg-amber-500 hover:bg-amber-400 text-zinc-950 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg"
                 >
                   <ShoppingCart className="w-4 h-4" />
-                  {tieneVariantes && !varianteActual
-                    ? 'Elegí una combinación'
-                    : infoPrecio.stock > 0 ? 'Agregar al Carrito' : 'Sin Stock'}
+                  Agregar al Pedido
                 </button>
               </div>
             </div>
           </div>
 
-          {/* LIGHTBOX: foto ampliada a pantalla completa, con zoom y navegación */}
+          {/* LIGHTBOX */}
           {lightboxAbierto && imagenAMostrar && (
             <div
-              className="fixed inset-0 z-[60] bg-zinc-950/95 flex items-center justify-center p-4"
+              className="fixed inset-0 z-[60] bg-amber-950/95 flex items-center justify-center p-4"
               onClick={() => { setLightboxAbierto(false); setImagenHoverZoom(false); setPanZoom({ x: 0, y: 0 }); }}
             >
               <button
@@ -1872,19 +1732,6 @@ export default function App() {
                   draggable={false}
                 />
               </div>
-
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
-                <span className="sm:hidden text-white/70 text-[11px] font-bold">
-                  {imagenHoverZoom
-                    ? 'Arrastrá para recorrer · Tocá para volver'
-                    : (listaImagenes.length > 1 ? 'Deslizá para ver más fotos · Tocá para ampliar' : 'Tocá la foto para ampliar')}
-                </span>
-                {listaImagenes.length > 1 && (
-                  <span className="text-white/80 text-xs font-bold">
-                    {imagenActivaIndex + 1} / {listaImagenes.length}
-                  </span>
-                )}
-              </div>
             </div>
           )}
           </>
@@ -1893,7 +1740,7 @@ export default function App() {
 
       {/* Botón WhatsApp Flotante */}
       <a
-        href={`https://wa.me/${configNegocio.whatsapp || "5493462368051"}`}
+        href={`https://wa.me/${configNegocio.whatsapp || "5491156988468"}`}
         target="_blank"
         rel="noreferrer"
         className="fixed bottom-20 right-6 z-40 bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-2xl transition-transform hover:scale-110 flex items-center justify-center border-2 border-white"
@@ -1904,11 +1751,11 @@ export default function App() {
 
       {/* MODAL LOGIN ADMIN */}
       {modalAdminAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/70 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-zinc-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-amber-950/70 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-amber-100">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-black text-zinc-900 text-sm uppercase tracking-wider flex items-center gap-2">
-                <Lock className="w-4 h-4 text-amber-600" /> Acceso Panel Admin
+                <Lock className="w-4 h-4 text-amber-700" /> Acceso Panel Admin
               </h3>
               <button onClick={() => setModalAdminAbierto(false)} className="p-1 text-zinc-400 hover:text-zinc-600">
                 <X className="w-4 h-4" />
@@ -1921,10 +1768,10 @@ export default function App() {
                 <input
                   type="email"
                   required
-                  placeholder="tiendaelasombro@guiaclic.com.ar"
+                  placeholder="tiendadepan@guiaclic.com.ar"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  className="w-full p-3 border border-zinc-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full p-3 border border-amber-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
@@ -1936,7 +1783,7 @@ export default function App() {
                   placeholder="••••••••"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full p-3 border border-zinc-300 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full p-3 border border-amber-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
               </div>
 
@@ -1945,7 +1792,7 @@ export default function App() {
               <button
                 type="submit"
                 disabled={cargandoAuth}
-                className="w-full py-3 bg-zinc-950 hover:bg-zinc-900 text-amber-400 font-black text-xs uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md"
+                className="w-full py-3 bg-amber-950 hover:bg-amber-900 text-amber-300 font-black text-xs uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md"
               >
                 {cargandoAuth ? 'Verificando...' : 'Ingresar al Panel'}
               </button>
@@ -1954,11 +1801,11 @@ export default function App() {
         </div>
       )}
 
-      {/* DRAWER CARRITO DE COMPRAS */}
+      {/* DRAWER CARRITO */}
       {carritoAbierto && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-zinc-950/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex justify-end bg-amber-950/60 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white h-full flex flex-col shadow-2xl">
-            <div className="p-4 border-b border-zinc-200 flex justify-between items-center bg-zinc-50">
+            <div className="p-4 border-b border-amber-200 flex justify-between items-center bg-amber-50/50">
               <h2 className="font-extrabold text-sm uppercase tracking-wider text-zinc-900">Tu Pedido ({totalItems})</h2>
               <div className="flex items-center gap-1">
                 {carrito.length > 0 && (
@@ -1978,11 +1825,11 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {carrito.length === 0 ? (
-                <div className="text-center py-16 text-zinc-400 text-xs font-medium">El carrito está vacío.</div>
+                <div className="text-center py-16 text-zinc-400 text-xs font-medium">El pedido está vacío.</div>
               ) : (
                 carrito.map((item) => (
-                  <div key={item.id} className="flex gap-3 items-center border-b border-zinc-100 pb-3">
-                    <div className="w-12 h-12 bg-zinc-100 rounded-xl overflow-hidden flex-shrink-0">
+                  <div key={item.id} className="flex gap-3 items-center border-b border-amber-100 pb-3">
+                    <div className="w-12 h-12 bg-amber-50 rounded-xl overflow-hidden flex-shrink-0">
                       {item.imagen ? (
                         <img src={item.imagen} alt={item.titulo} className="w-full h-full object-cover" />
                       ) : (
@@ -1991,14 +1838,14 @@ export default function App() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-bold text-xs text-zinc-900 truncate">{item.titulo}</h4>
-                      {(item.medida || item.material || item.color) && (
+                      {(item.sabor_presentacion || item.detalle) && (
                         <p className="text-[10px] text-zinc-500 font-medium truncate">
-                          {[item.medida, item.material, item.color].filter(Boolean).join(' / ')}
+                          {[item.sabor_presentacion, item.detalle].filter(Boolean).join(' / ')}
                         </p>
                       )}
-                      <p className="text-xs font-black text-amber-600">${item.precioEfectivo}</p>
+                      <p className="text-xs font-black text-amber-700">${item.precioEfectivo}</p>
                     </div>
-                    <div className="flex items-center border border-zinc-200 rounded-lg">
+                    <div className="flex items-center border border-amber-200 rounded-lg">
                       <button onClick={() => modificarCantidad(item.id, -1)} className="p-1 text-zinc-600">
                         <Minus className="w-3 h-3" />
                       </button>
@@ -2013,16 +1860,29 @@ export default function App() {
             </div>
 
             {carrito.length > 0 && (
-              <div className="p-4 border-t border-zinc-200 bg-zinc-50 space-y-3">
+              <div className="p-4 border-t border-amber-200 bg-amber-50/30 space-y-3">
                 <div className="flex justify-between items-center text-sm font-extrabold text-zinc-900">
                   <span>Total Estimado:</span>
                   <span className="text-lg font-black text-zinc-900">${totalCarrito}</span>
                 </div>
+
+                {!cumpleMinimo && (
+                  <p className="text-[11px] font-bold text-rose-600 text-center bg-rose-50 p-2 rounded-xl border border-rose-200">
+                    ⚠️ El mínimo de compra para envío es de ${MINIMO_ENVIO}. Te faltan ${MINIMO_ENVIO - totalCarrito} para completar el pedido.
+                  </p>
+                )}
+
                 <button
                   onClick={enviarPedidoWhatsApp}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-lg"
+                  disabled={!cumpleMinimo}
+                  className={`w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-colors ${
+                    cumpleMinimo
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
+                      : 'bg-zinc-300 text-zinc-500 cursor-not-allowed'
+                  }`}
                 >
-                  <MessageCircle className="w-4 h-4" /> Finalizar Pedido por WhatsApp
+                  <MessageCircle className="w-4 h-4" />
+                  {cumpleMinimo ? 'Finalizar Pedido por WhatsApp' : 'Mínimo de Envío No Alcanzado'}
                 </button>
               </div>
             )}
@@ -2030,84 +1890,51 @@ export default function App() {
         </div>
       )}
 
-      {/* NOTIFICACIÓN TOAST FLOTANTE */}
+      {/* TOAST */}
       {toastMensaje && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-950/95 text-amber-300 text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-amber-500/30 flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-amber-950/95 text-amber-300 text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-amber-500/30 flex items-center gap-2 animate-bounce">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMensaje}</span>
         </div>
       )}
 
       {/* FOOTER */}
-      <footer className="bg-zinc-950 text-zinc-300 pt-12 pb-8 px-4 border-t border-amber-500/20 mt-12">
+      <footer className="bg-amber-950 text-amber-200 pt-12 pb-8 px-4 border-t border-amber-700/30 mt-12">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 mb-8 text-left">
-
           <div>
             <div className="flex items-center space-x-3 mb-3">
-              <img src="/logo.jpg" alt="Tienda El Asombro" className="w-10 h-10 rounded-full border border-amber-400 object-cover" />
+              <img src="/logo.jpg" alt={configNegocio.nombre} className="w-10 h-10 rounded-full border border-amber-300 object-cover" />
               <div>
                 <h4 className="text-white font-bold text-lg leading-tight">{configNegocio.nombre}</h4>
-                <span className="text-amber-400 text-xs font-medium tracking-wide">{configNegocio.subtitulo}</span>
+                <span className="text-amber-300 text-xs font-medium tracking-wide">{configNegocio.subtitulo}</span>
               </div>
             </div>
-            <p className="text-sm text-zinc-400 mb-4 leading-relaxed">
-              Surtido de asombro. Blanquería, ropa, bazar y accesorios con el mejor precio y atención.
+            <p className="text-sm text-amber-200/80 mb-4 leading-relaxed">
+              Panadería y pastelería mayorista. Envíos programados directamente a tu comercio o domicilio.
             </p>
-            <div className="flex space-x-3">
-              <a
-                href="https://www.instagram.com/tienda_el_asombro/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 bg-zinc-900 border border-zinc-800 text-amber-400 hover:text-amber-300 hover:border-amber-400/50 px-3 py-1.5 rounded-lg text-xs transition"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-                <span>Instagram</span>
-              </a>
-            </div>
           </div>
 
           <div>
             <h4 className="text-white font-bold text-lg mb-3 flex items-center space-x-2">
-              <MapPin className="w-5 h-5 text-amber-400" />
-              <span>Locales y Contacto</span>
+              <MapPin className="w-5 h-5 text-amber-300" />
+              <span>Zonas de Cobertura</span>
             </h4>
-            <div className="space-y-2 text-sm">
-              <p className="text-zinc-300">
-                <strong className="text-amber-400">Sucursal Blanquería:</strong> Belgrano 535
-              </p>
-              <p className="text-zinc-300">
-                <strong className="text-amber-400">Sucursal Indumentaria:</strong> Belgrano 81
-              </p>
-              <p className="text-zinc-400 text-xs">Venado Tuerto, Santa Fe (2600)</p>
-              <p className="text-zinc-300 pt-1">
-                📞 <strong>WhatsApp:</strong> 3462 368051
-              </p>
+            <div className="space-y-2 text-sm text-amber-100">
+              <p>📍 {configNegocio.zonas_cobertura}</p>
+              <p className="pt-1">📞 <strong>WhatsApp:</strong> {configNegocio.whatsapp}</p>
             </div>
           </div>
 
           <div>
-            <h4 className="text-white font-bold text-lg mb-3">Cómo llegar</h4>
-            <a
-              href="https://maps.google.com/?q=Belgrano+81,+Venado+Tuerto"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-zinc-900 text-xs text-zinc-300 px-3 py-2 rounded-lg border border-zinc-800 hover:border-amber-400/50 hover:text-amber-300 transition mb-3"
-            >
-              <span>🗺️ Ver en Google Maps</span>
-            </a>
-            <div className="pt-2">
-              <p className="text-xs text-zinc-500">
-                Comercio Adherido a <a href={GUIA_CLIC_URL} target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-semibold hover:underline">GuiaClic</a>
-              </p>
-            </div>
+            <h4 className="text-white font-bold text-lg mb-3">Plataforma</h4>
+            <p className="text-xs text-amber-200/80">
+              Comercio Adherido a <a href={GUIA_CLIC_URL} target="_blank" rel="noopener noreferrer" className="text-amber-300 font-semibold hover:underline">GuiaClic</a>
+            </p>
           </div>
-
         </div>
 
-        <div className="border-t border-zinc-900 pt-6 text-center text-xs text-zinc-500">
-          © {new Date().getFullYear()} Tienda El Asombro. Todos los derechos reservados.
+        <div className="border-t border-amber-900 pt-6 text-center text-xs text-amber-300/60">
+          © {new Date().getFullYear()} {configNegocio.nombre}. Todos los derechos reservados.
         </div>
       </footer>
     </div>

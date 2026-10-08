@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 const CLOUDINARY_CLOUD_NAME = "okej62yk";
-const CLOUDINARY_UPLOAD_PRESET = "preset_elasombro";
+const CLOUDINARY_UPLOAD_PRESET = "preset_tiendadepan";
 
 // EMAIL AUTORIZADO PARA ESTA TIENDA
 const EMAIL_AUTORIZADO = "tiendadepan@guiaclic.com.ar";
@@ -962,13 +962,37 @@ export default function App() {
               </button>
             </div>
 
-            {/* CONFIGURACIÓN NEGOCIO */}
+                        {/* CONFIGURACIÓN NEGOCIO */}
             <form onSubmit={guardarConfigNegocio} className="bg-amber-950 p-5 rounded-xl border border-amber-800 space-y-4 shadow-sm">
               <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
                 <Settings className="w-4 h-4" /> Configuración de la Panadería
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                
+                {/* CAMPO AGREGADO: SUBIDA Y VISTA PREVIA DEL LOGO */}
+                <div className="sm:col-span-3 pb-2 border-b border-amber-800/60">
+                  <label className="text-xs font-bold text-amber-200 block mb-2">Logo del Comercio</label>
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={configNegocio.logo_url || '/logo.jpg'}
+                      alt="Logo actual"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-md"
+                    />
+                    <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 shadow transition-colors">
+                      {subiendoLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      <span>{subiendoLogo ? 'Subiendo...' : '📷 Subir nuevo logo'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleSubirImagen(e, true)}
+                        disabled={subiendoLogo}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
                 <div>
                   <label className="text-xs font-bold text-amber-200 block mb-1">Nombre del Negocio</label>
                   <input

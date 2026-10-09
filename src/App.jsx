@@ -4,7 +4,7 @@ import {
   ShoppingBag, Search, ShoppingCart, X, Plus, Minus, ExternalLink,
   MessageCircle, ArrowLeft, Lock, Edit3, Trash2, Tag, Check, Image as ImageIcon,
   KeyRound, LogOut, Upload, Loader2, Settings, Sparkles, MapPin,
-  ChevronRight, ChevronLeft, ZoomIn, Share2
+  ChevronRight, ChevronLeft, ZoomIn, Share2, ChevronDown
 } from 'lucide-react';
 
 const CLOUDINARY_CLOUD_NAME = "okej62yk";
@@ -53,6 +53,7 @@ export default function App() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [soloOfertas, setSoloOfertas] = useState(false);
+  const [menuCategoriasAbierto, setMenuCategoriasAbierto] = useState(false);
 
   // Modal Detalle de Producto
   const [productoDetalle, setProductoDetalle] = useState(null);
@@ -811,21 +812,25 @@ export default function App() {
         <header className="bg-amber-900 text-white sticky top-0 z-30 shadow-xl border-b border-amber-600/30">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
 
-            {/* LOGO + NOMBRE */}
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => { setCategoriaSeleccionada(null); setBusqueda(''); setSoloOfertas(false); }}
-            >
-              <img
-                src={configNegocio.logo_url || '/logo.jpg'}
-                alt={configNegocio.nombre}
-                className="w-14 h-14 rounded-full object-cover shadow-lg border-2 border-amber-300"
-              />
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tight leading-none text-white">{configNegocio.nombre}</h1>
-                <span className="text-xs sm:text-sm text-amber-300 tracking-widest uppercase font-bold">{configNegocio.subtitulo}</span>
-              </div>
-            </div>
+        {/* LOGO + NOMBRE DISPUESTOS EN VERTICAL */}
+        <div
+          className="flex flex-col items-center sm:items-start gap-1 cursor-pointer"
+          onClick={() => { setCategoriaSeleccionada(null); setBusqueda(''); setSoloOfertas(false); }}
+        >
+          <img
+            src={configNegocio.logo_url || '/logo.jpg'}
+            alt={configNegocio.nombre}
+            className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover shadow-lg border-2 border-amber-300"
+          />
+          <div className="text-center sm:text-left mt-1">
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-white">
+              {configNegocio.nombre}
+            </h1>
+            <span className="text-[10px] sm:text-xs text-amber-300 tracking-wider uppercase font-bold block mt-1">
+              {configNegocio.subtitulo}
+            </span>
+          </div>
+        </div>
 
             {/* BUSCADOR DESKTOP */}
             <div className="flex-1 max-w-lg hidden md:block">
@@ -870,30 +875,123 @@ export default function App() {
             </div>
           </div>
 
-          {/* BARRA DE CATEGORÍAS */}
-          <nav className="bg-amber-950 border-t border-amber-800/60 text-sm sm:text-base font-extrabold uppercase tracking-wider overflow-x-auto">
-            <div className="max-w-7xl mx-auto px-4 py-3.5 flex items-center gap-10 whitespace-nowrap">
-              <button
-                onClick={() => { setCategoriaSeleccionada(null); setSoloOfertas(false); setBusqueda(''); }}
-                className={`hover:text-amber-300 transition-colors ${!categoriaSeleccionada && !soloOfertas ? 'text-amber-300 font-black border-b-2 border-amber-300 pb-0.5' : 'text-amber-100'}`}
-              >
-                Inicio
-              </button>
-              <button
-                onClick={() => { setSoloOfertas(true); setCategoriaSeleccionada(null); }}
-                className={`flex items-center gap-2 text-amber-300 hover:text-amber-200 transition-colors ${soloOfertas ? 'font-black border-b-2 border-amber-300 pb-0.5' : ''}`}
-              >
-                <Tag className="w-5 h-5 fill-current" /> Promociones
-              </button>
-              {categorias.map((cat) => (
+          {/* Navegación Principal */}
+          <nav className="bg-stone-900 border-b border-amber-900/40 text-stone-200">
+            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-sm font-semibold h-12 relative">
+              <div className="flex items-center gap-2 overflow-x-visible">
+                
+                {/* 1. INICIO */}
                 <button
-                  key={cat}
-                  onClick={() => { setCategoriaSeleccionada(cat); setSoloOfertas(false); }}
-                  className={`capitalize hover:text-amber-300 transition-colors ${categoriaSeleccionada === cat ? 'text-amber-300 font-black border-b-2 border-amber-300 pb-0.5' : 'text-amber-100'}`}
+                  onClick={() => {
+                    setCategoriaSeleccionada(null);
+                    setSoloOfertas(false);
+                    setBusqueda('');
+                    setMenuCategoriasAbierto(false);
+                  }}
+                  className={`px-3 py-2 rounded-md transition-colors ${
+                    !categoriaSeleccionada && !soloOfertas
+                      ? 'text-amber-400 bg-stone-800 font-bold'
+                      : 'hover:text-amber-300 hover:bg-stone-800/50'
+                  }`}
                 >
-                  {cat}
+                  Inicio
                 </button>
-              ))}
+
+                {/* 2. PROMOCIONES */}
+                <button
+                  onClick={() => {
+                    setSoloOfertas(true);
+                    setCategoriaSeleccionada(null);
+                    setMenuCategoriasAbierto(false);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors ${
+                    soloOfertas
+                      ? 'text-amber-400 bg-stone-800 font-bold'
+                      : 'hover:text-amber-300 hover:bg-stone-800/50'
+                  }`}
+                >
+                  <Tag className="w-4 h-4 text-amber-400" />
+                  Promociones
+                </button>
+
+                {/* 3. CATEGORÍAS (Desplegable) */}
+                <div className="relative">
+                  <button
+                    onClick={() => setMenuCategoriasAbierto(!menuCategoriasAbierto)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors ${
+                      categoriaSeleccionada
+                        ? 'text-amber-400 bg-stone-800 font-bold'
+                        : 'hover:text-amber-300 hover:bg-stone-800/50'
+                    }`}
+                  >
+                    Categorías
+                    <ChevronDown className={`w-4 h-4 transition-transform ${menuCategoriasAbierto ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Menú Desplegable (Dropdown) */}
+                  {menuCategoriasAbierto && (
+                    <>
+                      {/* Backdrop para cerrar al hacer clic afuera */}
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setMenuCategoriasAbierto(false)}
+                      />
+
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-stone-900 border border-stone-700 rounded-lg shadow-2xl py-2 z-50 divide-y divide-stone-800">
+                        <button
+                          onClick={() => {
+                            setCategoriaSeleccionada(null);
+                            setSoloOfertas(false);
+                            setMenuCategoriasAbierto(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                            !categoriaSeleccionada ? 'text-amber-400 bg-stone-800' : 'text-stone-300 hover:bg-stone-800 hover:text-white'
+                          }`}
+                        >
+                          Todas las categorías
+                        </button>
+
+                        <div className="py-1">
+                          {categorias.map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => {
+                                setCategoriaSeleccionada(cat);
+                                setSoloOfertas(false);
+                                setMenuCategoriasAbierto(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-xs font-semibold transition-colors ${
+                                categoriaSeleccionada === cat
+                                  ? 'text-amber-400 bg-stone-800 font-bold'
+                                  : 'text-stone-300 hover:bg-stone-800 hover:text-white'
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* 4. CONTACTO */}
+                <button
+                  onClick={() => {
+                    setMenuCategoriasAbierto(false);
+                    const footerElement = document.getElementById('footer');
+                    if (footerElement) {
+                      footerElement.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    }
+                  }}
+                  className="px-3 py-2 rounded-md hover:text-amber-300 hover:bg-stone-800/50 transition-colors"
+                >
+                  Contacto
+                </button>
+
+              </div>
             </div>
           </nav>
         </header>
@@ -1767,7 +1865,7 @@ export default function App() {
         href={`https://wa.me/${configNegocio.whatsapp || "5491156988468"}`}
         target="_blank"
         rel="noreferrer"
-        className="fixed bottom-20 right-6 z-40 bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-2xl transition-transform hover:scale-110 flex items-center justify-center border-2 border-white"
+        className="fixed bottom-10 right-6 z-40 bg-emerald-500 hover:bg-emerald-600 text-white p-4 rounded-full shadow-2xl transition-transform hover:scale-110 flex items-center justify-center border-2 border-white"
         title="Consultar por WhatsApp"
       >
         <MessageCircle className="w-8 h-8 fill-current" />

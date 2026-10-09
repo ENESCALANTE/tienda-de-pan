@@ -86,6 +86,19 @@ export default function App() {
   const [toastMensaje, setToastMensaje] = useState('');
   const [animarCarrito, setAnimarCarrito] = useState(false);
 
+  // Advertencia al recargar o salir si hay productos en el carrito
+  useEffect(() => {
+    const manejarAntesDeSalir = (e) => {
+      if (carrito.length > 0) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', manejarAntesDeSalir);
+    return () => window.removeEventListener('beforeunload', manejarAntesDeSalir);
+  }, [carrito]);
+
   // Modo Admin
   const [esAdmin, setEsAdmin] = useState(false);
   const [modalAdminAbierto, setModalAdminAbierto] = useState(false);
@@ -815,7 +828,7 @@ export default function App() {
         {/* LOGO + NOMBRE DISPUESTOS EN VERTICAL */}
         <div
           className="flex flex-col items-center sm:items-start gap-1 cursor-pointer"
-          onClick={() => { setCategoriaSeleccionada(null); setBusqueda(''); setSoloOfertas(false); }}
+          onClick={() => { setCategoriaSeleccionada(null); setBusqueda(''); setSoloOfertas(false); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
         >
           <img
             src={configNegocio.logo_url || '/logo.jpg'}
@@ -877,7 +890,7 @@ export default function App() {
 
           {/* Navegación Principal */}
           <nav className="bg-stone-900 border-b border-amber-900/40 text-stone-200">
-            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-sm font-semibold h-12 relative">
+            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between text-base font-semibold h-14 relative">
               <div className="flex items-center gap-2 overflow-x-visible">
                 
                 {/* 1. INICIO */}
@@ -887,8 +900,9 @@ export default function App() {
                     setSoloOfertas(false);
                     setBusqueda('');
                     setMenuCategoriasAbierto(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`px-3 py-2 rounded-md transition-colors ${
+                  className={`px-4 py-2.5 text-base rounded-md transition-colors ${
                     !categoriaSeleccionada && !soloOfertas
                       ? 'text-amber-400 bg-stone-800 font-bold'
                       : 'hover:text-amber-300 hover:bg-stone-800/50'
@@ -904,7 +918,7 @@ export default function App() {
                     setCategoriaSeleccionada(null);
                     setMenuCategoriasAbierto(false);
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors ${
+                  className={`flex items-center gap-1.5 px-4 py-2.5 text-base rounded-md transition-colors ${
                     soloOfertas
                       ? 'text-amber-400 bg-stone-800 font-bold'
                       : 'hover:text-amber-300 hover:bg-stone-800/50'
@@ -918,7 +932,7 @@ export default function App() {
                 <div className="relative">
                   <button
                     onClick={() => setMenuCategoriasAbierto(!menuCategoriasAbierto)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-md transition-colors ${
+                    className={`flex items-center gap-1.5 px-4 py-2.5 text-base rounded-md transition-colors ${
                       categoriaSeleccionada
                         ? 'text-amber-400 bg-stone-800 font-bold'
                         : 'hover:text-amber-300 hover:bg-stone-800/50'
@@ -944,7 +958,7 @@ export default function App() {
                             setSoloOfertas(false);
                             setMenuCategoriasAbierto(false);
                           }}
-                          className={`w-full text-left px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                          className={`w-full text-left px-4 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors ${
                             !categoriaSeleccionada ? 'text-amber-400 bg-stone-800' : 'text-stone-300 hover:bg-stone-800 hover:text-white'
                           }`}
                         >
@@ -986,7 +1000,7 @@ export default function App() {
                       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
                     }
                   }}
-                  className="px-3 py-2 rounded-md hover:text-amber-300 hover:bg-stone-800/50 transition-colors"
+                  className="px-4 py-2.5 text-base rounded-md hover:text-amber-300 hover:bg-stone-800/50 transition-colors"
                 >
                   Contacto
                 </button>
@@ -2049,7 +2063,7 @@ export default function App() {
 
           <div>
             <h4 className="text-white font-bold text-lg mb-3">Plataforma</h4>
-            <p className="text-xs text-amber-200/80">
+            <p className="text-sm text-amber-200/80">
               Comercio Adherido a <a href={GUIA_CLIC_URL} target="_blank" rel="noopener noreferrer" className="text-amber-300 font-semibold hover:underline">GuiaClic</a>
             </p>
           </div>

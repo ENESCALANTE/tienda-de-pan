@@ -911,23 +911,6 @@ export default function App() {
                   Inicio
                 </button>
 
-                {/* 2. PROMOCIONES */}
-                <button
-                  onClick={() => {
-                    setSoloOfertas(true);
-                    setCategoriaSeleccionada(null);
-                    setMenuCategoriasAbierto(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 text-base rounded-md transition-colors ${
-                    soloOfertas
-                      ? 'text-amber-400 bg-stone-800 font-bold'
-                      : 'hover:text-amber-300 hover:bg-stone-800/50'
-                  }`}
-                >
-                  <Tag className="w-4 h-4 text-amber-400" />
-                  Promociones
-                </button>
-
                 {/* 3. CATEGORÍAS (Desplegable) */}
                 <div className="relative">
                   <button

@@ -4,7 +4,7 @@ import {
   ShoppingBag, Search, ShoppingCart, X, Plus, Minus, ExternalLink,
   MessageCircle, ArrowLeft, Lock, Edit3, Trash2, Tag, Check, Image as ImageIcon,
   KeyRound, LogOut, Upload, Loader2, Settings, Sparkles, MapPin,
-  ChevronRight, ChevronLeft, ZoomIn, Share2, ChevronDown
+  ChevronRight, ChevronLeft, ZoomIn, Share2, ChevronDown, Eye, EyeOff
 } from 'lucide-react';
 
 const CLOUDINARY_CLOUD_NAME = "okej62yk";
@@ -104,6 +104,7 @@ export default function App() {
   const [modalAdminAbierto, setModalAdminAbierto] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [errorPassword, setErrorPassword] = useState('');
   const [cargandoAuth, setCargandoAuth] = useState(false);
 
@@ -817,7 +818,7 @@ export default function App() {
     <div className="min-h-screen bg-amber-50/30 text-zinc-900 flex flex-col justify-between font-sans antialiased">
       <div>
         {/* Banner Superior Informativo de Envíos */}
-        <div className="bg-amber-950 text-amber-300 text-xs sm:text-sm py-2.5 px-4 font-bold text-center flex justify-center items-center gap-2 border-b border-amber-500/30">
+        <div className="bg-amber-950 text-amber-300 text-sm sm:text-sm py-2.5 px-4 font-bold text-center flex justify-center items-center gap-2 border-b border-amber-500/30">
           <span>🚚 ENVÍOS A DOMICILIO (Mínimo ${configNegocio.monto_minimo_envio || 5000}): {configNegocio.zonas_cobertura}</span>
         </div>
 
@@ -839,7 +840,7 @@ export default function App() {
             <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight leading-none text-white">
               {configNegocio.nombre}
             </h1>
-            <span className="text-[10px] sm:text-xs text-amber-300 tracking-wider uppercase font-bold block mt-1">
+            <span className="text-xs sm:text-sm text-amber-300 tracking-wider uppercase font-bold block mt-1">
               {configNegocio.subtitulo}
             </span>
           </div>
@@ -870,7 +871,7 @@ export default function App() {
                 <ShoppingCart className="w-6 h-6" />
                 <span className="text-sm font-black hidden sm:inline uppercase tracking-wider">Pedido</span>
                 {totalItems > 0 && (
-                  <span className={`bg-amber-950 text-amber-300 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow transition-transform duration-300 ${
+                  <span className={`bg-amber-950 text-amber-300 text-sm font-black w-6 h-6 rounded-full flex items-center justify-center shadow transition-transform duration-300 ${
                     animarCarrito ? 'scale-150' : 'scale-100'
                   }`}>
                     {totalItems}
@@ -941,7 +942,7 @@ export default function App() {
                             setSoloOfertas(false);
                             setMenuCategoriasAbierto(false);
                           }}
-                          className={`w-full text-left px-4 py-2.5 text-sm font-bold uppercase tracking-wider transition-colors ${
+                          className={`w-full text-left px-4 py-2.5 text-base font-bold uppercase tracking-wider transition-colors ${
                             !categoriaSeleccionada ? 'text-amber-400 bg-stone-800' : 'text-stone-300 hover:bg-stone-800 hover:text-white'
                           }`}
                         >
@@ -957,7 +958,7 @@ export default function App() {
                                 setSoloOfertas(false);
                                 setMenuCategoriasAbierto(false);
                               }}
-                              className={`w-full text-left px-4 py-2 text-xs font-semibold transition-colors ${
+                              className={`w-full text-left px-4 py-2 text-base font-semibold transition-colors ${
                                 categoriaSeleccionada === cat
                                   ? 'text-amber-400 bg-stone-800 font-bold'
                                   : 'text-stone-300 hover:bg-stone-800 hover:text-white'
@@ -1018,7 +1019,7 @@ export default function App() {
             <div className="absolute inset-0 bg-gradient-to-t from-amber-950 via-amber-950/60 to-transparent" />
 
             <div className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 text-center md:text-left flex flex-col items-center md:items-start space-y-6">
-              <span className="bg-amber-400 text-amber-950 text-xs sm:text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg inline-flex items-center gap-1.5">
+              <span className="bg-amber-400 text-amber-950 text-sm sm:text-sm font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg inline-flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4" /> VENTA MAYORISTA & REPARTO
               </span>
 
@@ -1051,7 +1052,7 @@ export default function App() {
               </div>
               <button
                 onClick={handleLogoutAdmin}
-                className="text-xs font-bold bg-amber-950 hover:bg-amber-800 px-3.5 py-1.5 rounded-lg text-amber-300 flex items-center gap-1 border border-amber-800"
+                className="text-sm font-bold bg-amber-950 hover:bg-amber-800 px-3.5 py-1.5 rounded-lg text-amber-300 flex items-center gap-1 border border-amber-800"
               >
                 <LogOut className="w-3.5 h-3.5" /> Cerrar Sesión
               </button>
@@ -1059,7 +1060,7 @@ export default function App() {
 
                         {/* CONFIGURACIÓN NEGOCIO */}
             <form onSubmit={guardarConfigNegocio} className="bg-amber-950 p-5 rounded-xl border border-amber-800 space-y-4 shadow-sm">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              <h4 className="text-sm font-extrabold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
                 <Settings className="w-4 h-4" /> Configuración de la Panadería
               </h4>
 
@@ -1067,14 +1068,14 @@ export default function App() {
                 
                 {/* CAMPO AGREGADO: SUBIDA Y VISTA PREVIA DEL LOGO */}
                 <div className="sm:col-span-3 pb-2 border-b border-amber-800/60">
-                  <label className="text-xs font-bold text-amber-200 block mb-2">Logo del Comercio</label>
+                  <label className="text-sm font-bold text-amber-200 block mb-2">Logo del Comercio</label>
                   <div className="flex items-center gap-4">
                     <img
                       src={configNegocio.logo_url || '/logo.jpg'}
                       alt="Logo actual"
                       className="w-16 h-16 rounded-full object-cover border-2 border-amber-400 shadow-md"
                     />
-                    <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 shadow transition-colors">
+                    <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-amber-950 text-sm font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 shadow transition-colors">
                       {subiendoLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                       <span>{subiendoLogo ? 'Subiendo...' : '📷 Subir nuevo logo'}</span>
                       <input
@@ -1089,7 +1090,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-1">Nombre del Negocio</label>
+                  <label className="text-sm font-bold text-amber-200 block mb-1">Nombre del Negocio</label>
                   <input
                     type="text"
                     required
@@ -1100,7 +1101,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-1">Subtítulo / Rubro</label>
+                  <label className="text-sm font-bold text-amber-200 block mb-1">Subtítulo / Rubro</label>
                   <input
                     type="text"
                     required
@@ -1111,7 +1112,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-1">WhatsApp de Pedidos</label>
+                  <label className="text-sm font-bold text-amber-200 block mb-1">WhatsApp de Pedidos</label>
                   <input
                     type="text"
                     required
@@ -1122,7 +1123,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-amber-200 block mb-1">Monto Mínimo de Envío ($)</label>
+                  <label className="text-sm font-bold text-amber-200 block mb-1">Monto Mínimo de Envío ($)</label>
                   <input
                     type="number"
                     required
@@ -1133,7 +1134,7 @@ export default function App() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold text-amber-200 block mb-1">Zonas de Cobertura</label>
+                  <label className="text-sm font-bold text-amber-200 block mb-1">Zonas de Cobertura</label>
                   <input
                     type="text"
                     required
@@ -1146,7 +1147,7 @@ export default function App() {
 
               <button
                 type="submit"
-                className="bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs uppercase tracking-wider px-5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 shadow"
+                className="bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-sm uppercase tracking-wider px-5 py-2.5 rounded-xl transition-colors flex items-center gap-1.5 shadow"
               >
                 <Check className="w-4 h-4" /> Guardar Configuración
               </button>
@@ -1154,13 +1155,13 @@ export default function App() {
 
             {/* CARGA PRODUCTOS */}
             <form onSubmit={guardarProducto} className="bg-amber-950 p-5 rounded-xl border border-amber-800 space-y-6 shadow-sm text-amber-100">
-              <h4 className="text-xs font-extrabold uppercase tracking-wider text-amber-300">
+              <h4 className="text-sm font-extrabold uppercase tracking-wider text-amber-300">
                 {productoEditar ? '✏️ Modificar Producto' : '➕ PUBLICAR NUEVO PRODUCTO'}
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="text-xs font-bold block mb-1">Título / Nombre</label>
+                  <label className="text-sm font-bold block mb-1">Título / Nombre</label>
                   <input
                     type="text"
                     required
@@ -1172,7 +1173,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold block mb-1">Categoría</label>
+                  <label className="text-sm font-bold block mb-1">Categoría</label>
                   <input
                     type="text"
                     required
@@ -1184,7 +1185,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold block mb-1">Precio Base ($)</label>
+                  <label className="text-sm font-bold block mb-1">Precio Base ($)</label>
                   <input
                     type="number"
                     required
@@ -1196,7 +1197,7 @@ export default function App() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-rose-300 block mb-1">Precio Oferta ($ - Opcional)</label>
+                  <label className="text-sm font-bold text-rose-300 block mb-1">Precio Oferta ($ - Opcional)</label>
                   <input
                     type="number"
                     placeholder="Opcional"
@@ -1207,9 +1208,9 @@ export default function App() {
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="text-xs font-bold block mb-1">Fotos del Producto</label>
+                  <label className="text-sm font-bold block mb-1">Fotos del Producto</label>
                   <div className="flex flex-wrap items-center gap-3">
-                    <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 shadow transition-colors">
+                    <label className="cursor-pointer bg-amber-400 hover:bg-amber-300 text-amber-950 text-sm font-bold py-2.5 px-4 rounded-lg flex items-center gap-2 shadow transition-colors">
                       {subiendoImagen ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                       {subiendoImagen ? 'Subiendo...' : '📷 Agregar Fotos'}
                       <input
@@ -1238,7 +1239,7 @@ export default function App() {
                 </div>
 
                 <div className="sm:col-span-3">
-                  <label className="text-xs font-bold block mb-1">Descripción</label>
+                  <label className="text-sm font-bold block mb-1">Descripción</label>
                   <textarea
                     rows={2}
                     placeholder="Descripción, ingredientes, peso aproximado o presentación..."
@@ -1252,13 +1253,13 @@ export default function App() {
               {/* VARIANTES PARA PANADERÍA */}
               <div className="border-t border-amber-800 pt-4 space-y-3">
                 <div className="flex justify-between items-center">
-                  <h5 className="text-xs font-extrabold uppercase tracking-wider text-amber-200">
+                  <h5 className="text-sm font-extrabold uppercase tracking-wider text-amber-200">
                     Variantes (Sabor / Presentación / Precio)
                   </h5>
                   <button
                     type="button"
                     onClick={() => setFormVariantes(prev => [...prev, { sabor_presentacion: '', detalle: '', stock: 999, precio: '', precio_oferta: '', imagen_asociada_url: '' }])}
-                    className="text-xs font-bold bg-amber-400 text-amber-950 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-amber-300"
+                    className="text-sm font-bold bg-amber-400 text-amber-950 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-amber-300"
                   >
                     <Plus className="w-3.5 h-3.5" /> Agregar Variante
                   </button>
@@ -1271,7 +1272,7 @@ export default function App() {
                 {formVariantes.map((v, idx) => (
                   <div key={idx} className="bg-amber-900 p-3 rounded-xl border border-amber-800 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-center">
                     <div>
-                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Sabor / Presentación</label>
+                      <label className="text-xs font-bold text-amber-300 block mb-1">Sabor / Presentación</label>
                       <input
                         type="text"
                         list="datalist-sabores"
@@ -1281,12 +1282,12 @@ export default function App() {
                           const val = e.target.value;
                           setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, sabor_presentacion: val } : item));
                         }}
-                        className="w-full p-2 border border-amber-700 rounded-lg text-xs font-medium bg-amber-950 text-white"
+                        className="w-full p-2 border border-amber-700 rounded-lg text-sm font-medium bg-amber-950 text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Detalle / Envase</label>
+                      <label className="text-xs font-bold text-amber-300 block mb-1">Detalle / Envase</label>
                       <input
                         type="text"
                         placeholder="Ej: Caja x 12u"
@@ -1295,12 +1296,12 @@ export default function App() {
                           const val = e.target.value;
                           setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, detalle: val } : item));
                         }}
-                        className="w-full p-2 border border-amber-700 rounded-lg text-xs font-medium bg-amber-950 text-white"
+                        className="w-full p-2 border border-amber-700 rounded-lg text-sm font-medium bg-amber-950 text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Precio Variante ($)</label>
+                      <label className="text-xs font-bold text-amber-300 block mb-1">Precio Variante ($)</label>
                       <input
                         type="number"
                         placeholder="Si difiere del base"
@@ -1309,14 +1310,14 @@ export default function App() {
                           const val = e.target.value;
                           setFormVariantes(prev => prev.map((item, i) => i === idx ? { ...item, precio: val } : item));
                         }}
-                        className="w-full p-2 border border-amber-700 rounded-lg text-xs font-medium bg-amber-950 text-white"
+                        className="w-full p-2 border border-amber-700 rounded-lg text-sm font-medium bg-amber-950 text-white"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[10px] font-bold text-amber-300 block mb-1">Foto Variante</label>
+                      <label className="text-xs font-bold text-amber-300 block mb-1">Foto Variante</label>
                       <div className="flex items-center gap-2">
-                        <label className="cursor-pointer bg-amber-800 hover:bg-amber-700 text-amber-200 text-[11px] font-bold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1.5 w-full shadow-sm transition-colors border border-amber-700">
+                        <label className="cursor-pointer bg-amber-800 hover:bg-amber-700 text-amber-200 text-xs font-bold py-2 px-2.5 rounded-lg flex items-center justify-center gap-1.5 w-full shadow-sm transition-colors border border-amber-700">
                           {subiendoImagenVarIdx === idx ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                           <span>{v.imagen_asociada_url ? 'Cambiar' : 'Subir'}</span>
                           <input
@@ -1363,7 +1364,7 @@ export default function App() {
                 <button
                   type="submit"
                   disabled={subiendoImagen || subiendoImagenVarIdx !== null}
-                  className="w-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs uppercase tracking-wider py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
+                  className="w-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" /> {productoEditar ? 'Guardar Cambios del Producto' : 'Publicar Producto'}
                 </button>
@@ -1379,7 +1380,7 @@ export default function App() {
               <div className="flex items-center justify-between mb-6 pb-3 border-b border-amber-200">
                 <button
                   onClick={() => { setCategoriaSeleccionada(null); setBusqueda(''); setSoloOfertas(false); }}
-                  className="flex items-center gap-1.5 text-xs font-extrabold text-amber-800 hover:underline uppercase tracking-wider"
+                  className="flex items-center gap-1.5 text-sm font-extrabold text-amber-800 hover:underline uppercase tracking-wider"
                 >
                   <ArrowLeft className="w-4 h-4" /> Volver a la portada
                 </button>
@@ -1405,7 +1406,7 @@ export default function App() {
                         className="bg-white rounded-3xl overflow-hidden border border-amber-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between relative group cursor-pointer"
                       >
                         {tieneOferta && (
-                          <div className="absolute top-3 left-3 z-10 bg-rose-600 text-white text-xs font-black uppercase px-3 py-1 rounded-full shadow-md">
+                          <div className="absolute top-3 left-3 z-10 bg-rose-600 text-white text-sm font-black uppercase px-3 py-1 rounded-full shadow-md">
                             OFERTA
                           </div>
                         )}
@@ -1431,23 +1432,23 @@ export default function App() {
                             ) : (
                               <div className="w-full h-full flex flex-col items-center justify-center text-amber-300">
                                 <ImageIcon className="w-10 h-10 mb-1" />
-                                <span className="text-xs font-semibold">Sin imagen</span>
+                                <span className="text-sm font-semibold">Sin imagen</span>
                               </div>
                             )}
                           </div>
 
                           <div className="p-4">
-                            <span className="text-xs font-black text-amber-700 uppercase tracking-widest">{prod.categoria}</span>
+                            <span className="text-sm font-black text-amber-700 uppercase tracking-widest">{prod.categoria}</span>
                             <h3 className="font-extrabold text-base sm:text-lg text-zinc-900 line-clamp-2 mt-1 leading-snug">{prod.titulo}</h3>
                             {prod.descripcion && (
-                              <p className="text-xs sm:text-sm text-zinc-500 line-clamp-2 mt-1">{prod.descripcion}</p>
+                              <p className="text-sm sm:text-sm text-zinc-500 line-clamp-2 mt-1">{prod.descripcion}</p>
                             )}
 
                             <div className="mt-3 flex items-baseline gap-2">
                               {tieneOferta ? (
                                 <>
                                   <span className="text-xl sm:text-2xl font-black text-rose-600">${prod.precio_oferta}</span>
-                                  <span className="text-xs sm:text-sm text-zinc-400 line-through font-bold">${prod.precio_base}</span>
+                                  <span className="text-sm sm:text-sm text-zinc-400 line-through font-bold">${prod.precio_base}</span>
                                 </>
                               ) : (
                                 <span className="text-xl sm:text-2xl font-black text-zinc-900">${prod.precio_base}</span>
@@ -1458,7 +1459,7 @@ export default function App() {
 
                         <div className="p-4 pt-0">
                           <button
-                            className="w-full py-3 bg-amber-950 group-hover:bg-amber-400 group-hover:text-amber-950 text-amber-300 border border-amber-400/30 rounded-2xl text-xs sm:text-sm font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md"
+                            className="w-full py-3 bg-amber-950 group-hover:bg-amber-400 group-hover:text-amber-950 text-amber-300 border border-amber-400/30 rounded-2xl text-sm sm:text-sm font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 shadow-md"
                           >
                             Ver Opciones
                           </button>
@@ -1492,9 +1493,9 @@ export default function App() {
                     <div className="absolute inset-0 bg-gradient-to-t from-amber-950/85 via-amber-950/30 to-transparent" />
 
                     <div className="relative z-10 w-full bg-amber-950/90 backdrop-blur-md p-5 rounded-2xl text-center shadow-2xl border border-amber-500/20">
-                      <span className="text-xs font-black text-amber-300 uppercase tracking-widest">CATEGORÍA</span>
+                      <span className="text-sm font-black text-amber-300 uppercase tracking-widest">CATEGORÍA</span>
                       <h4 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider mt-0.5">{cat}</h4>
-                      <span className="inline-block mt-3 px-5 py-2.5 bg-amber-400 text-amber-950 text-xs sm:text-sm font-black rounded-xl uppercase tracking-wider transition-colors shadow-md">
+                      <span className="inline-block mt-3 px-5 py-2.5 bg-amber-400 text-amber-950 text-sm sm:text-sm font-black rounded-xl uppercase tracking-wider transition-colors shadow-md">
                         VER PRODUCTOS
                       </span>
                     </div>
@@ -1708,7 +1709,7 @@ export default function App() {
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <span className="text-xs font-black text-amber-700 uppercase tracking-widest">{productoDetalle.categoria}</span>
+                      <span className="text-sm font-black text-amber-700 uppercase tracking-widest">{productoDetalle.categoria}</span>
                       <h2 className="text-2xl font-black text-zinc-900 leading-tight mt-1">{productoDetalle.titulo}</h2>
                     </div>
                     <button
@@ -1718,7 +1719,7 @@ export default function App() {
                       className="flex-shrink-0 flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 px-3 py-2 rounded-xl transition-colors"
                     >
                       <Share2 className="w-4 h-4" />
-                      <span className="text-[11px] font-black uppercase tracking-wide hidden sm:inline">Compartir</span>
+                      <span className="text-xs font-black uppercase tracking-wide hidden sm:inline">Compartir</span>
                     </button>
                   </div>
 
@@ -1730,7 +1731,7 @@ export default function App() {
                   </div>
 
                   {productoDetalle.descripcion && (
-                    <p className="text-xs text-zinc-600 leading-relaxed font-medium bg-amber-50/50 p-3 rounded-xl border border-amber-100">
+                    <p className="text-sm text-zinc-600 leading-relaxed font-medium bg-amber-50/50 p-3 rounded-xl border border-amber-100">
                       {productoDetalle.descripcion}
                     </p>
                   )}
@@ -1739,11 +1740,11 @@ export default function App() {
                   <div className="space-y-3 pt-2">
                     {saboresDisponibles.length > 0 && (
                       <div>
-                        <label className="text-xs font-bold text-zinc-700 block mb-1">Sabor / Presentación:</label>
+                        <label className="text-sm font-bold text-zinc-700 block mb-1">Sabor / Presentación:</label>
                         <select
                           value={saborSel}
                           onChange={(e) => handleCambioVariante('sabor', e.target.value)}
-                          className="w-full p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
+                          className="w-full p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
                         >
                           {saboresDisponibles.map((s) => (
                             <option key={s} value={s}>{s}</option>
@@ -1754,11 +1755,11 @@ export default function App() {
 
                     {detallesDisponibles.length > 0 && (
                       <div>
-                        <label className="text-xs font-bold text-zinc-700 block mb-1">Detalle / Empaque:</label>
+                        <label className="text-sm font-bold text-zinc-700 block mb-1">Detalle / Empaque:</label>
                         <select
                           value={detalleSel}
                           onChange={(e) => handleCambioVariante('detalle', e.target.value)}
-                          className="w-full p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
+                          className="w-full p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm font-bold text-zinc-800 focus:ring-2 focus:ring-amber-400"
                         >
                           {detallesDisponibles.map((d) => (
                             <option key={d} value={d}>{d}</option>
@@ -1770,7 +1771,7 @@ export default function App() {
 
                   {/* CANTIDAD */}
                   <div className="pt-2 flex items-center justify-between border-t border-amber-100">
-                    <span className="text-[11px] font-black uppercase tracking-wider block text-zinc-500">Cantidad:</span>
+                    <span className="text-xs font-black uppercase tracking-wider block text-zinc-500">Cantidad:</span>
                     <div className="flex items-center border border-amber-300 rounded-xl bg-amber-50/50">
                       <button
                         onClick={() => setCantidadSel(prev => Math.max(1, prev - 1))}
@@ -1779,7 +1780,7 @@ export default function App() {
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-                      <span className="px-3 text-xs font-black">{cantidadSel}</span>
+                      <span className="px-3 text-sm font-black">{cantidadSel}</span>
                       <button
                         onClick={() => setCantidadSel(prev => prev + 1)}
                         className="p-2 text-zinc-600 hover:text-zinc-900"
@@ -1792,7 +1793,7 @@ export default function App() {
 
                 <button
                   onClick={agregarAlCarritoDesdeDetalle}
-                  className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-2xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg"
+                  className="w-full py-4 bg-amber-400 hover:bg-amber-300 text-amber-950 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Agregar al Pedido
@@ -1883,7 +1884,7 @@ export default function App() {
 
             <form onSubmit={handleLoginAdmin} className="space-y-4">
               <div>
-                <label className="text-xs text-zinc-700 font-bold block mb-1">Email:</label>
+                <label className="text-sm text-zinc-700 font-bold block mb-1">Email:</label>
                 <input
                   type="email"
                   required
@@ -1895,23 +1896,33 @@ export default function App() {
               </div>
 
               <div>
-                <label className="text-xs text-zinc-700 font-bold block mb-1">Contraseña:</label>
+              <label className="text-sm text-zinc-700 font-bold block mb-1">Contraseña:</label>
+              <div className="relative">
                 <input
-                  type="password"
+                  type={mostrarPassword ? 'text' : 'password'}
                   required
                   placeholder="••••••••"
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  className="w-full p-3 border border-amber-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                  className="w-full p-3 pr-10 border border-amber-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
+                <button
+                  type="button"
+                  onClick={() => setMostrarPassword(!mostrarPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 p-1"
+                  title={mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {mostrarPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+            </div>
 
-              {errorPassword && <p className="text-xs text-rose-600 font-bold">{errorPassword}</p>}
+              {errorPassword && <p className="text-sm text-rose-600 font-bold">{errorPassword}</p>}
 
               <button
                 type="submit"
                 disabled={cargandoAuth}
-                className="w-full py-3 bg-amber-950 hover:bg-amber-900 text-amber-300 font-black text-xs uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md"
+                className="w-full py-3 bg-amber-950 hover:bg-amber-900 text-amber-300 font-black text-sm uppercase tracking-wider transition-colors disabled:opacity-50 shadow-md"
               >
                 {cargandoAuth ? 'Verificando...' : 'Ingresar al Panel'}
               </button>
@@ -1930,7 +1941,7 @@ export default function App() {
                 {carrito.length > 0 && (
                   <button
                     onClick={vaciarCarrito}
-                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg uppercase tracking-wide"
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg uppercase tracking-wide"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Vaciar
@@ -1944,7 +1955,7 @@ export default function App() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {carrito.length === 0 ? (
-                <div className="text-center py-16 text-zinc-400 text-xs font-medium">El pedido está vacío.</div>
+                <div className="text-center py-16 text-zinc-400 text-sm font-medium">El pedido está vacío.</div>
               ) : (
                 carrito.map((item) => (
                   <div key={item.id} className="flex gap-3 items-center border-b border-amber-100 pb-3">
@@ -1956,19 +1967,19 @@ export default function App() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-xs text-zinc-900 truncate">{item.titulo}</h4>
+                      <h4 className="font-bold text-sm text-zinc-900 truncate">{item.titulo}</h4>
                       {(item.sabor_presentacion || item.detalle) && (
-                        <p className="text-[10px] text-zinc-500 font-medium truncate">
+                        <p className="text-xs text-zinc-500 font-medium truncate">
                           {[item.sabor_presentacion, item.detalle].filter(Boolean).join(' / ')}
                         </p>
                       )}
-                      <p className="text-xs font-black text-amber-700">${item.precioEfectivo}</p>
+                      <p className="text-sm font-black text-amber-700">${item.precioEfectivo}</p>
                     </div>
                     <div className="flex items-center border border-amber-200 rounded-lg">
                       <button onClick={() => modificarCantidad(item.id, -1)} className="p-1 text-zinc-600">
                         <Minus className="w-3 h-3" />
                       </button>
-                      <span className="px-2 text-xs font-bold">{item.cantidad}</span>
+                      <span className="px-2 text-sm font-bold">{item.cantidad}</span>
                       <button onClick={() => modificarCantidad(item.id, 1)} className="p-1 text-zinc-600">
                         <Plus className="w-3 h-3" />
                       </button>
@@ -1986,7 +1997,7 @@ export default function App() {
                 </div>
 
                 {!cumpleMinimo && (
-                  <p className="text-[11px] font-bold text-rose-600 text-center bg-rose-50 p-2 rounded-xl border border-rose-200">
+                  <p className="text-xs font-bold text-rose-600 text-center bg-rose-50 p-2 rounded-xl border border-rose-200">
                     ⚠️ El mínimo de compra para envío es de ${MINIMO_ENVIO}. Te faltan ${MINIMO_ENVIO - totalCarrito} para completar el pedido.
                   </p>
                 )}
@@ -1994,7 +2005,7 @@ export default function App() {
                 <button
                   onClick={enviarPedidoWhatsApp}
                   disabled={!cumpleMinimo}
-                  className={`w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-colors ${
+                  className={`w-full py-3.5 rounded-xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-colors ${
                     cumpleMinimo
                       ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer'
                       : 'bg-zinc-300 text-zinc-500 cursor-not-allowed'
@@ -2011,7 +2022,7 @@ export default function App() {
 
       {/* TOAST */}
       {toastMensaje && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-amber-950/95 text-amber-300 text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-amber-500/30 flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-amber-950/95 text-amber-300 text-sm font-bold px-5 py-3 rounded-2xl shadow-2xl backdrop-blur-md border border-amber-500/30 flex items-center gap-2 animate-bounce">
           <Check className="w-4 h-4 text-emerald-400" />
           <span>{toastMensaje}</span>
         </div>
@@ -2025,7 +2036,7 @@ export default function App() {
               <img src="/logo.jpg" alt={configNegocio.nombre} className="w-10 h-10 rounded-full border border-amber-300 object-cover" />
               <div>
                 <h4 className="text-white font-bold text-lg leading-tight">{configNegocio.nombre}</h4>
-                <span className="text-amber-300 text-xs font-medium tracking-wide">{configNegocio.subtitulo}</span>
+                <span className="text-amber-300 text-sm font-medium tracking-wide">{configNegocio.subtitulo}</span>
               </div>
             </div>
             <p className="text-sm text-amber-200/80 mb-4 leading-relaxed">
@@ -2052,7 +2063,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="border-t border-amber-900 pt-6 text-center text-xs text-amber-300/60">
+        <div className="border-t border-amber-900 pt-6 text-center text-sm text-amber-300/60">
           © {new Date().getFullYear()} {configNegocio.nombre}. Todos los derechos reservados.
         </div>
       </footer>
